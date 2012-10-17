@@ -140,6 +140,8 @@ class GridViewSpecial extends View {
 
     private boolean mRunning = false;
     private Scroller mScroller = null;
+    private boolean mIsInA2Mode = false;
+    private ExitA2ModeAndInvalidate mExitA2;
     private PowerManager.WakeLock wl = null;
 
     public GridViewSpecial(Context context, AttributeSet attrs) {
@@ -148,6 +150,7 @@ class GridViewSpecial extends View {
     }
 
     private void init(Context context) {
+        mExitA2 = new ExitA2ModeAndInvalidate();
         initializeScrollbars(context.obtainStyledAttributes(
                 android.R.styleable.View));
         mGestureDetector = new GestureDetector(context,
@@ -473,6 +476,16 @@ class GridViewSpecial extends View {
         }
     }
 
+    private final class ExitA2ModeAndInvalidate implements Runnable {
+        public void run() {
+            if (mIsInA2Mode) {
+                mIsInA2Mode = false;
+                requestEpdMode(View.EPD_FULL);
+                invalidate();
+            }
+        }
+    }
+
     @Override
     public void onDraw(Canvas canvas) {
         super.onDraw(canvas);
@@ -491,6 +504,11 @@ class GridViewSpecial extends View {
             if (more) {
                 invalidate();  // So we draw again
             } else {
+                if (mExitA2 == null) {
+                    mExitA2 = new ExitA2ModeAndInvalidate();
+                }
+                removeCallbacks(mExitA2);
+                post(mExitA2);
                 mScroller = null;
             }
         } else {
@@ -538,11 +556,20 @@ class GridViewSpecial extends View {
                 break;
             case MotionEvent.ACTION_UP:
                 mCurrentPressState &= ~TAPPING_FLAG;
-                invalidate();
+                break;
+            case MotionEvent.ACTION_MOVE:
+                removeCallbacks(mExitA2);
                 break;
         }
-        mGestureDetector.onTouchEvent(ev);
         // Consume all events
+        boolean res = mGestureDetector.onTouchEvent(ev);
+        if (!res && ev.getAction() == MotionEvent.ACTION_UP) {
+            if (mExitA2 == null) {
+                mExitA2 = new ExitA2ModeAndInvalidate();
+            }
+            removeCallbacks(mExitA2);
+            post(mExitA2);
+        }
         return true;
     }
 
@@ -560,6 +587,10 @@ class GridViewSpecial extends View {
         y = Math.max(0, Math.min(mMaxScrollY, y));
         if (mSpec != null) {
             mListener.onScroll((float) mScrollY / mMaxScrollY);
+        }
+        if (mScrollY != y && !mIsInA2Mode && mCurrentPressState != 0) {
+             requestEpdMode(View.EPD_A2);
+             mIsInA2Mode = true;
         }
         super.scrollTo(x, y);
     }

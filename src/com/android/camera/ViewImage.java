@@ -79,6 +79,7 @@ public class ViewImage extends NoSearchActivity implements View.OnClickListener 
     private static final int[] sOrderSlideshow = new int[] {0};
 
     final GetterHandler mHandler = new GetterHandler();
+    final Handler m_Handler = new Handler();
 
     private final Random mRandom = new Random(System.currentTimeMillis());
     private int [] mShuffleOrder = null;
@@ -121,6 +122,10 @@ public class ViewImage extends NoSearchActivity implements View.OnClickListener 
     private int mSlideShowImageCurrent = 0;
     private final ImageViewTouchBase [] mSlideShowImageViews =
             new ImageViewTouchBase[2];
+
+    final int FULL_REFRESH_THRESHOLD = 5;
+    private boolean mIsInA2Mode = false;
+    private ExitA2ModeAndInvalidate mExitA2;
 
     GestureDetector mGestureDetector;
     private boolean mIsInZoomIn = false;
@@ -299,6 +304,16 @@ public class ViewImage extends NoSearchActivity implements View.OnClickListener 
                 }
 
                 if (event.getAction() == MotionEvent.ACTION_UP) {
+                    if (mIsInA2Mode) {
+                        Log.d(TAG, "Touch UP, set in PART mode");
+                        if (mExitA2 == null) {
+                            mExitA2 = new ExitA2ModeAndInvalidate();
+                        }
+                        m_Handler.removeCallbacks(mExitA2);
+                        m_Handler.post(mExitA2);
+                        mImageView.requestEpdMode(View.EPD_FULL);
+                        mImageView.invalidate();
+                    }
                     if (mImageView.getScale() == 1) {
                         Log.d(TAG, "ACTION_UP, mIsInZoomIn mode is false");
                         mIsInZoomIn = false;
@@ -328,6 +343,16 @@ public class ViewImage extends NoSearchActivity implements View.OnClickListener 
         centerY = (event.getY(0) + event.getY(1))/2;
     }
 
+    private final class ExitA2ModeAndInvalidate implements Runnable {
+        public void run() {
+            if (mIsInA2Mode) {
+                mIsInA2Mode = false;
+                mImageView.requestEpdMode(View.EPD_FULL);
+                mImageView.invalidate();
+            }
+        }
+    }
+
     private class MyGestureListener extends
             GestureDetector.SimpleOnGestureListener {
 
@@ -340,6 +365,10 @@ public class ViewImage extends NoSearchActivity implements View.OnClickListener 
             if (mPaused) return false;
             ImageViewTouch imageView = mImageView;
             if (imageView.getScale() > 1F) {
+                if (!mIsInA2Mode) {
+                    imageView.requestEpdMode(View.EPD_A2);
+                    mIsInA2Mode = true;
+                }
                 imageView.postTranslateCenter(-distanceX, -distanceY);
             }
             return true;
@@ -395,9 +424,11 @@ public class ViewImage extends NoSearchActivity implements View.OnClickListener 
             // Switch between the original scale and 3x scale.
             if (imageView.getScale() > 2F) {
                 mIsInZoomIn = false;
+                mImageView.requestEpdMode(View.EPD_FULL);
                 mImageView.zoomTo(1f);
             } else {
                 mIsInZoomIn = true;
+                mImageView.requestEpdMode(View.EPD_FULL);
                 mImageView.zoomToPoint(3f, e.getX(), e.getY());
             }
             return true;
@@ -684,6 +715,7 @@ public class ViewImage extends NoSearchActivity implements View.OnClickListener 
         }
 
         setupOnScreenControls(findViewById(R.id.rootLayout), mImageView);
+        mImageView.requestEpdMode(View.EPD_FULL);
     }
 
     private void updateActionIcons() {
