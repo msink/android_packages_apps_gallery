@@ -28,7 +28,7 @@
     <string name="view_label" msgid="4450531507947335704">"View picture"</string>
     <string name="preferences_label" msgid="5955678162525051163">"Camera settings"</string>
     <string name="wait" msgid="8600187532323801552">"Please wait…"</string>
-    <string name="no_storage" product="nosdcard" msgid="852782056902429852">"Please mount the shared storage before using the camera."</string>
+    <string name="no_storage" product="nosdcard" msgid="852782056902429852">"You need to mount the shared storage before using the camera."</string>
     <string name="no_storage" product="default" msgid="820691042667338625">"Please insert an SD card before using the camera."</string>
     <string name="not_enough_space" product="nosdcard" msgid="7966388882416357252">"Your shared storage is full."</string>
     <string name="not_enough_space" product="default" msgid="6655334407957844653">"Your SD card is full."</string>
