@@ -33,7 +33,8 @@ public class ImageList extends BaseImageList implements IImageList {
     private static final String TAG = "ImageList";
 
     private static final String[] ACCEPTABLE_IMAGE_TYPES =
-            new String[] { "image/jpeg", "image/png", "image/gif" };
+            new String[] { "image/jpeg", "image/png", "image/gif",
+                           "image/x-ms-bmp", "image/vnd.wap.wbmp" };
 
     public HashMap<String, String> getBucketIds() {
         Uri uri = mBaseUri.buildUpon()
@@ -64,7 +65,7 @@ public class ImageList extends BaseImageList implements IImageList {
     }
 
     private static final String WHERE_CLAUSE =
-            "(" + Media.MIME_TYPE + " in (?, ?, ?))";
+            "(" + Media.MIME_TYPE + " in (?, ?, ?,?,?))";
     private static final String WHERE_CLAUSE_WITH_BUCKET_ID =
             WHERE_CLAUSE + " AND " + Media.BUCKET_ID + " = ?";
 

@@ -69,7 +69,9 @@ public class Image extends BaseImage implements IImage {
 
     public boolean isReadonly() {
         String mimeType = getMimeType();
-        return !"image/jpeg".equals(mimeType) && !"image/png".equals(mimeType);
+        return !"image/jpeg".equals(mimeType) && !"image/png".equals(mimeType) &&
+               !"image/gif".equals(mimeType) && !"image/x-ms-bmp".equals(mimeType) &&
+               !"image/vnd.wap.wbmp".equals(mimeType);
     }
 
     public boolean isDrm() {
