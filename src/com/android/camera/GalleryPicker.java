@@ -127,6 +127,7 @@ public class GalleryPicker extends NoSearchActivity {
     // Display a dialog if the storage is being scanned now.
     public void updateScanningDialog(boolean scanning) {
         boolean prevScanning = (mMediaScanningDialog != null);
+        assert (mAdapter != null);
         if (prevScanning == scanning && mAdapter.mItems.size() == 0) return;
         // Now we are certain the state is changed.
         if (prevScanning) {
@@ -287,6 +288,7 @@ public class GalleryPicker extends NoSearchActivity {
         getContentResolver().registerContentObserver(
                 MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
                 true, mDbObserver);
+        mDbObserver.onChange(true);
 
         // Assume the storage is mounted and not scanning.
         mUnmounted = false;
@@ -324,8 +326,10 @@ public class GalleryPicker extends NoSearchActivity {
             // (We assume that the "what" field in the messages are 0
             // for runnables).
             mHandler.removeMessages(0);
-            mAdapter.clear();
-            mAdapter.updateDisplay();
+            if (mAdapter != null) {
+                mAdapter.clear();
+                mAdapter.updateDisplay();
+            }
             clearImageLists();
         }
     }
@@ -369,7 +373,11 @@ public class GalleryPicker extends NoSearchActivity {
 
     // This is run in the main thread.
     private void checkScanningFinished(boolean scanning) {
-        updateScanningDialog(scanning);
+        try {
+            updateScanningDialog(scanning);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     // This is run in the worker thread.
@@ -484,6 +492,7 @@ public class GalleryPicker extends NoSearchActivity {
         // If we just have one folder, open it.
         // If we have zero folder, show the "no images" icon.
         if (!mScanning) {
+            assert (mAdapter != null);
             int numItems = mAdapter.mItems.size();
             if (numItems == 0) {
                 showNoImagesView();
@@ -603,7 +612,11 @@ public class GalleryPicker extends NoSearchActivity {
     Drawable mVideoOverlay;
 
     private void loadDrawableIfNeeded() {
-        if (mFrameGalleryMask != null) return;  // already loaded
+        if (mFrameGalleryMask != null &&
+            mCellOutline != null &&
+            mVideoOverlay != null) {
+            return;  // already loaded
+        }
         Resources r = getResources();
         mFrameGalleryMask = r.getDrawable(
                 R.drawable.frame_gallery_preview_album_mask);
@@ -711,6 +724,7 @@ public class GalleryPicker extends NoSearchActivity {
             if (temp != null) {
                 tempCanvas.drawBitmap(temp, new Matrix(), new Paint());
             }
+            loadDrawableIfNeeded();
             mCellOutline.setBounds(0, 0, imageWidth, imageHeight);
             mCellOutline.draw(tempCanvas);
 
@@ -769,8 +783,11 @@ public class GalleryPicker extends NoSearchActivity {
     }
 
     private void clearImageLists() {
-        for (IImageList list : mAllLists) {
-            list.close();
+        try {
+            for (IImageList list : mAllLists) {
+                list.close();
+            }
+        } catch (Exception e) {
         }
         mAllLists.clear();
     }
