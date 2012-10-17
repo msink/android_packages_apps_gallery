@@ -26,6 +26,8 @@ import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.PowerManager;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.util.AttributeSet;
@@ -101,6 +103,8 @@ public class ViewImage extends NoSearchActivity implements View.OnClickListener 
     private Animation [] mSlideShowOutAnimation;
 
     private SharedPreferences mPrefs;
+
+    private PowerManager.WakeLock wl = null;
 
     private final Animation mHideNextImageViewAnimation =
             new AlphaAnimation(1F, 0F);
@@ -879,6 +883,10 @@ public class ViewImage extends NoSearchActivity implements View.OnClickListener 
                                     generateShuffleOrder();
                                 }
                             } else {
+                                if (wl != null && wl.isHeld()) {
+                                    wl.release();
+                                    wl = null;
+                                }
                                 setMode(MODE_NORMAL);
                                 return;
                             }
@@ -898,6 +906,10 @@ public class ViewImage extends NoSearchActivity implements View.OnClickListener 
                 pos = mShuffleOrder[pos];
             }
             mGetter.setPosition(pos, cb, mAllImages, mHandler);
+            if (wl != null && wl.isHeld()) {
+                wl.release();
+                wl = null;
+            }
         }
     }
 
@@ -968,6 +980,9 @@ public class ViewImage extends NoSearchActivity implements View.OnClickListener 
         }
 
         if (mMode == MODE_SLIDESHOW) {
+            PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+            wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "My_Tag");
+            wl.acquire();
             loadNextImage(mCurrentPosition, 0, true);
         } else {  // MODE_NORMAL
             setImage(mCurrentPosition, mShowControls);

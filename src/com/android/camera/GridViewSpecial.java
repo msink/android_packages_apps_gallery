@@ -29,6 +29,7 @@ import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
 import android.os.Handler;
+import android.os.PowerManager;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.view.GestureDetector;
@@ -139,6 +140,7 @@ class GridViewSpecial extends View {
 
     private boolean mRunning = false;
     private Scroller mScroller = null;
+    private PowerManager.WakeLock wl = null;
 
     public GridViewSpecial(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -440,6 +442,9 @@ class GridViewSpecial extends View {
         Assert(mListener != null);
         Assert(mDrawAdapter != null);
         mRunning = true;
+        PowerManager pm = (PowerManager) mContext.getSystemService(Context.POWER_SERVICE);
+        wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "My_Tag");
+        wl.acquire();
         requestLayout();
     }
 
@@ -462,6 +467,10 @@ class GridViewSpecial extends View {
         }
         mRunning = false;
         mCurrentSelection = INDEX_NONE;
+        if (wl != null && wl.isHeld()) {
+            wl.release();
+            wl = null;
+        }
     }
 
     @Override
