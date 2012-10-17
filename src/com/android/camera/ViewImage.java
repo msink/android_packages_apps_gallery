@@ -736,7 +736,7 @@ public class ViewImage extends NoSearchActivity implements View.OnClickListener 
 
         if (mShowActionIcons) {
             int[] pickIds = {R.id.attach, R.id.cancel};
-            int[] normalIds = {R.id.setas, R.id.play, R.id.share, R.id.discard};
+            int[] normalIds = {R.id.play, R.id.share, R.id.discard};
             int[] connectIds = isPickIntent() ? pickIds : normalIds;
             for (int id : connectIds) {
                 View view = mActionIconPanel.findViewById(id);
@@ -772,10 +772,8 @@ public class ViewImage extends NoSearchActivity implements View.OnClickListener 
         IImage image = mAllImages.getImageAt(mCurrentPosition);
         View panel = mActionIconPanel;
         if (image instanceof VideoObject) {
-            panel.findViewById(R.id.setas).setVisibility(View.GONE);
             panel.findViewById(R.id.play).setVisibility(View.VISIBLE);
         } else {
-            panel.findViewById(R.id.setas).setVisibility(View.VISIBLE);
             panel.findViewById(R.id.play).setVisibility(View.GONE);
         }
     }
