@@ -113,6 +113,13 @@
                 android:text="@string/camera_cancel"
                 style="@style/OnscreenActionIcon"
         />
+        <com.android.camera.ActionMenuButton
+                android:id="@+id/back"
+                android:visibility="gone"
+                android:drawableTop="@drawable/ic_menu_cancel"
+                android:text="@string/camera_back"
+                style="@style/OnscreenActionIcon"
+        />
     </com.android.camera.EvenlySpacedLayout>
 </RelativeLayout>
 

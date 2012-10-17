@@ -656,7 +656,7 @@ public class ViewImage extends NoSearchActivity implements View.OnClickListener 
 
         if (mShowActionIcons) {
             int[] pickIds = {R.id.attach, R.id.cancel};
-            int[] normalIds = {R.id.play, R.id.discard};
+            int[] normalIds = {R.id.play, R.id.discard, R.id.back};
             int[] connectIds = isPickIntent() ? pickIds : normalIds;
             for (int id : connectIds) {
                 View view = mActionIconPanel.findViewById(id);
@@ -1078,6 +1078,9 @@ public class ViewImage extends NoSearchActivity implements View.OnClickListener 
                 }
                 break;
             }
+            case R.id.back:
+                backToGridView();
+                break;
         }
     }
 
@@ -1086,6 +1089,13 @@ public class ViewImage extends NoSearchActivity implements View.OnClickListener 
         if ((0 <= nextImagePos) && (nextImagePos < mAllImages.getCount())) {
             setImage(nextImagePos, true);
         }
+    }
+
+    private void backToGridView() {
+        IImage img = mAllImages.getImageAt(mCurrentPosition);
+        setResult(ViewImage.RESULT_OK,
+            new Intent().setData(img.fullSizeImageUri()));
+        finish();
     }
 
     @Override
@@ -1201,6 +1211,9 @@ class ImageViewTouch extends ImageViewTouchBase {
                 case KeyEvent.KEYCODE_DPAD_DOWN: {
                     panBy(0, -PAN_RATE);
                     center(false, true);
+                    return true;
+                }
+                case KeyEvent.KEYCODE_MENU: {
                     return true;
                 }
                 case KeyEvent.KEYCODE_DEL:

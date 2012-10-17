@@ -144,6 +144,9 @@
     <!-- button indicating that the video recording session should be canceled -->
     <string name="camera_cancel">Cancel</string>
 
+    <!--  -->
+    <string name="camera_back">Back</string>
+
     <!-- button indicating that the picture just taken should be cropped -->
     <string name="camera_crop">Crop</string>
 
