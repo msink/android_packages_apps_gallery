@@ -303,7 +303,6 @@ class GridViewSpecial extends View {
     // GestureDetector could queue events and fire them later. At that time
     // stop() may have already been called and we can't handle the events.
     private class MyGestureDetector extends SimpleOnGestureListener {
-        private AudioManager mAudioManager;
 
         @Override
         public boolean onDown(MotionEvent e) {
@@ -361,13 +360,6 @@ class GridViewSpecial extends View {
             if (!canHandleEvent()) return false;
             int index = computeSelectedIndex(e.getX(), e.getY());
             if (index >= 0 && index < mCount) {
-                // Play click sound.
-                if (mAudioManager == null) {
-                    mAudioManager = (AudioManager) getContext()
-                            .getSystemService(Context.AUDIO_SERVICE);
-                }
-                mAudioManager.playSoundEffect(AudioManager.FX_KEY_CLICK);
-
                 mListener.onImageTapped(index);
                 return true;
             }
