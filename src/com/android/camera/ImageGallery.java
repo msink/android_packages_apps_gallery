@@ -472,13 +472,10 @@ public class ImageGallery extends NoSearchActivity implements
             String type = getIntent().resolveType(this);
             if (type != null) {
                 if (isImageType(type)) {
-                    MenuHelper.addCapturePictureMenuItems(menu, this);
                 } else if (isVideoType(type)) {
-                    MenuHelper.addCaptureVideoMenuItems(menu, this);
                 }
             }
         } else {
-            MenuHelper.addCaptureMenuItems(menu, this);
             if ((mInclusion & ImageManager.INCLUDE_IMAGES) != 0) {
                 mSlideShowItem = addSlideShowMenu(menu);
             }

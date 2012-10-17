@@ -745,8 +745,6 @@ public class GalleryPicker extends NoSearchActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         super.onCreateOptionsMenu(menu);
 
-        MenuHelper.addCaptureMenuItems(menu, this);
-
         menu.add(Menu.NONE, Menu.NONE, MenuHelper.POSITION_GALLERY_SETTING,
                 R.string.camerasettings)
                 .setOnMenuItemClickListener(new OnMenuItemClickListener() {
