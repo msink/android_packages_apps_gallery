@@ -25,6 +25,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.util.Log;
 
+import java.io.File;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -136,6 +137,9 @@ public abstract class BaseImageList implements IImageList {
             ((BaseImage) image).onRemove();
             invalidateCursor();
             invalidateCache();
+            Log.d(TAG, "removing: " + image.getDataPath());
+            File file = new File(image.getDataPath());
+            file.delete();
             return true;
         } else {
             return false;

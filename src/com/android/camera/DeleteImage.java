@@ -26,6 +26,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.widget.ProgressBar;
 
+import java.io.File;
 import java.util.ArrayList;
 
 public class DeleteImage extends NoSearchActivity {
@@ -34,6 +35,7 @@ public class DeleteImage extends NoSearchActivity {
     private static final String TAG = "DeleteImage";
     private ProgressBar mProgressBar;
     private ArrayList<Uri> mUriList;  // a list of image uri
+    private ArrayList<String> mPathList;
     private int mIndex = 0;  // next image to delete
     private final Handler mHandler = new Handler();
     private final Runnable mDeleteNextRunnable = new Runnable() {
@@ -49,7 +51,8 @@ public class DeleteImage extends NoSearchActivity {
         super.onCreate(savedInstanceState);
         Intent intent = getIntent();
         mUriList = intent.getParcelableArrayListExtra("delete-uris");
-        if (mUriList == null) {
+        mPathList = intent.getStringArrayListExtra("delete-paths");
+        if (mUriList == null || mPathList == null) {
             finish();
         }
         setContentView(R.layout.delete_image);
@@ -66,14 +69,19 @@ public class DeleteImage extends NoSearchActivity {
 
     private void deleteNext() {
         if (mPausing) return;
-        if (mIndex >= mUriList.size()) {
+        if (mIndex >= mUriList.size() || mIndex >= mPathList.size()) {
             finish();
             return;
         }
-        Uri uri = mUriList.get(mIndex++);
+        Uri uri = mUriList.get(mIndex);
+        mContentResolver.delete(uri, null, null);
+        String path = mPathList.get(mIndex);
+        File file = new File(path);
+        file.delete();
+        mIndex++;
+
         // The max progress value of the bar is set to 10000 in the xml file.
         mProgressBar.setProgress(mIndex * 10000 / mUriList.size());
-        mContentResolver.delete(uri, null, null);
         mHandler.post(mDeleteNextRunnable);
     }
 

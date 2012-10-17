@@ -985,13 +985,16 @@ public class ImageGallery extends NoSearchActivity implements
         Runnable action = new Runnable() {
             public void run() {
                 ArrayList<Uri> uriList = new ArrayList<Uri>();
+                ArrayList<String> pathList = new ArrayList<String>();
                 for (IImage image : mMultiSelected) {
                     uriList.add(image.fullSizeImageUri());
+                    pathList.add(image.getDataPath());
                 }
                 closeMultiSelectMode();
                 Intent intent = new Intent(ImageGallery.this,
                         DeleteImage.class);
                 intent.putExtra("delete-uris", uriList);
+                intent.putStringArrayListExtra("delete-paths", pathList);
                 try {
                     startActivity(intent);
                 } catch (ActivityNotFoundException ex) {
