@@ -62,7 +62,6 @@ public class MenuHelper {
     private static final String TAG = "MenuHelper";
 
     public static final int INCLUDE_ALL           = 0xFFFFFFFF;
-    public static final int INCLUDE_VIEWPLAY_MENU = (1 << 0);
     public static final int INCLUDE_CROP_MENU     = (1 << 3);
     public static final int INCLUDE_DELETE_MENU   = (1 << 4);
     public static final int INCLUDE_ROTATE_MENU   = (1 << 5);
@@ -658,20 +657,6 @@ public class MenuHelper {
                 }
             });
             detailsMenu.setIcon(R.drawable.ic_menu_view_details);
-        }
-
-        if ((inclusions & INCLUDE_VIEWPLAY_MENU) != 0) {
-            MenuItem videoPlayItem = menu.add(Menu.NONE, Menu.NONE,
-                POSITION_VIEWPLAY, R.string.video_play)
-                .setOnMenuItemClickListener(
-                new MenuItem.OnMenuItemClickListener() {
-                public boolean onMenuItemClick(MenuItem item) {
-                    return onViewPlayClicked(onInvoke, activity);
-                }
-            });
-            videoPlayItem.setIcon(
-                    com.android.internal.R.drawable.ic_menu_play_clip);
-            requiresVideoItems.add(videoPlayItem);
         }
 
         return new MenuItemsResult() {

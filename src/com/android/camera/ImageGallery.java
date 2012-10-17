@@ -136,6 +136,7 @@ public class ImageGallery extends NoSearchActivity implements
         }
 
         setupInclusion();
+        mInclusion &= ~ImageManager.INCLUDE_VIDEOS;
 
         mLoader = new ImageLoader(getContentResolver(), mHandler);
     }
