@@ -23,11 +23,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.graphics.Matrix;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.util.AttributeSet;
+import android.util.FloatMath;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.KeyEvent;
@@ -123,6 +125,7 @@ public class ViewImage extends NoSearchActivity implements View.OnClickListener 
             new ImageViewTouchBase[2];
 
     GestureDetector mGestureDetector;
+    private boolean mIsInZoomIn = false;
     private ZoomButtonsController mZoomButtonsController;
 
     // The image view displayed for normal mode.
@@ -135,6 +138,17 @@ public class ViewImage extends NoSearchActivity implements View.OnClickListener 
             hideOnScreenControls();
         }
     };
+
+    final static float MIN_DIST = 50;
+    static float saveDistance = 0;
+    static float centerX = 0;
+    static float centerY = 0;
+    private Matrix matrix = new Matrix();
+    private Matrix saveMatrix = new Matrix();
+    static final int NONE = 0;
+    static final int DRAG = 1;
+    static final int ZOOM = 2;
+    private int touchState = NONE;
 
     private void updateNextPrevControls() {
         boolean showPrev = mCurrentPosition > 0;
@@ -283,8 +297,10 @@ public class ViewImage extends NoSearchActivity implements View.OnClickListener 
             public void onZoom(boolean zoomIn) {
                 if (zoomIn) {
                     mImageView.zoomIn();
+                    mIsInZoomIn = true;
                 } else {
                     mImageView.zoomOut();
+                    mIsInZoomIn = true;
                 }
                 mZoomButtonsController.setVisible(true);
                 updateZoomButtonsEnabled();
@@ -309,6 +325,60 @@ public class ViewImage extends NoSearchActivity implements View.OnClickListener 
         OnTouchListener rootListener = new OnTouchListener() {
             public boolean onTouch(View v, MotionEvent event) {
                 buttonListener.onTouch(v, event);
+
+                switch (event.getAction() & 0xFF) {
+                case MotionEvent.ACTION_DOWN:
+                    touchState = DRAG;
+                    centerX = event.getX(0);
+                    centerY = event.getY(0);
+                    saveMatrix.set(matrix);
+                    break;
+                case MotionEvent.ACTION_POINTER_1_DOWN:
+                    Log.d("onTouch", "ACTION_POINTER_DOWN");
+                    saveDistance = calcDistance(event);
+                    if (saveDistance > MIN_DIST) {
+                        saveMatrix.set(matrix);
+                        touchState = ZOOM;
+                    }
+                    break;
+                case MotionEvent.ACTION_MOVE:
+                    if (event.getPointerCount() != 2)
+                        break;
+                    if (touchState == DRAG) {
+                    }
+                    Log.d("onTouch", "ACTION_MOVE");
+                    break;
+                case MotionEvent.ACTION_UP:
+                case MotionEvent.ACTION_POINTER_1_UP:
+                    if (touchState == ZOOM) {
+                        float distance = calcDistance(event);
+                        calcMidpoint(centerX, centerY, event);
+                        if (distance > MIN_DIST) {
+                            matrix.set(saveMatrix);
+                            float scale = (distance / saveDistance);
+                            Log.d("onTouch", "scale = " + scale);
+                            if (Math.abs(scale) > 1) {
+                                mImageView.requestEpdMode(View.EPD_FULL);
+                                mImageView.zoomIn();
+                                mIsInZoomIn = true;
+                            } else if (scale < 1) {
+                                mImageView.requestEpdMode(View.EPD_FULL);
+                                mImageView.zoomOut();
+                                mIsInZoomIn = true;
+                            }
+                        }
+                    }
+                    touchState = NONE;
+                    break;
+                }
+
+                if (event.getAction() == MotionEvent.ACTION_UP) {
+                    if (mImageView.getScale() == 1) {
+                        Log.d(TAG, "ACTION_UP, mIsInZoomIn mode is false");
+                        mIsInZoomIn = false;
+                    }
+                }
+
                 mGestureDetector.onTouchEvent(event);
 
                 // We do not use the return value of
@@ -323,8 +393,22 @@ public class ViewImage extends NoSearchActivity implements View.OnClickListener 
         rootView.setOnTouchListener(rootListener);
     }
 
+    private float calcDistance(MotionEvent event) {
+        float x = event.getX(0) - event.getX(1);
+        float y = event.getY(0) - event.getY(1);
+        return FloatMath.sqrt(x * x + y * y);
+    }
+
+    private void calcMidpoint(float centerX, float centerY, MotionEvent event) {
+        centerX = (event.getX(0) + event.getX(1))/2;
+        centerY = (event.getY(0) + event.getY(1))/2;
+    }
+
     private class MyGestureListener extends
             GestureDetector.SimpleOnGestureListener {
+
+        static final float swipeMinDistance = 100;
+        static final float swipeThresholdVelocity = 50;
 
         @Override
         public boolean onScroll(MotionEvent e1, MotionEvent e2,
@@ -333,6 +417,35 @@ public class ViewImage extends NoSearchActivity implements View.OnClickListener 
             ImageViewTouch imageView = mImageView;
             if (imageView.getScale() > 1F) {
                 imageView.postTranslateCenter(-distanceX, -distanceY);
+            }
+            return true;
+        }
+
+        @Override
+        public boolean onFling(MotionEvent e1, MotionEvent e2,
+                               float velocityX, float velocityY) {
+            if (mPaused) return false;
+            Log.d(TAG, "onFling@@@@@@@@@@");
+            if (mIsInZoomIn) return false;
+            float deltaY = e2.getY() - e1.getY();
+            float deltaX = e1.getX() - e2.getX();
+            if (deltaY > swipeMinDistance &&
+                    deltaY > Math.abs(deltaX)) {
+                showOnScreenControls();
+            } else if (-deltaY > swipeMinDistance &&
+                    -deltaY > Math.abs(deltaX)) {
+                hideOnScreenControls();
+            }
+            if (deltaX > swipeMinDistance &&
+                    Math.abs(velocityX) > swipeThresholdVelocity) {
+                mImageView.requestEpdMode(View.EPD_FULL);
+                moveNextOrPrevious(1);
+                Log.d(TAG, "++++++++++++++++[OnFling][Fling left]");
+            } else if (-deltaX > swipeMinDistance &&
+                    Math.abs(velocityX) > swipeThresholdVelocity) {
+                mImageView.requestEpdMode(View.EPD_FULL);
+                moveNextOrPrevious(-1);
+                Log.d(TAG, "++++++++++++++++[OnFling][Fling right]");
             }
             return true;
         }
@@ -359,8 +472,10 @@ public class ViewImage extends NoSearchActivity implements View.OnClickListener 
 
             // Switch between the original scale and 3x scale.
             if (imageView.getScale() > 2F) {
+                mIsInZoomIn = false;
                 mImageView.zoomTo(1f);
             } else {
+                mIsInZoomIn = true;
                 mImageView.zoomToPoint(3f, e.getX(), e.getY());
             }
             return true;
