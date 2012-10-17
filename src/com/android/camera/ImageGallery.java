@@ -148,13 +148,6 @@ public class ImageGallery extends NoSearchActivity implements
             }
         });
 
-        Button shareButton = (Button) findViewById(R.id.button_share);
-        shareButton.setOnClickListener(new OnClickListener() {
-            public void onClick(View v) {
-                onShareMultipleClicked();
-            }
-        });
-
         Button closeButton = (Button) findViewById(R.id.button_close);
         closeButton.setOnClickListener(new OnClickListener() {
             public void onClick(View v) {
@@ -938,46 +931,6 @@ public class ImageGallery extends NoSearchActivity implements
         return flag == FLAG_IMAGE
                 ? "image/*"
                 : flag == FLAG_VIDEO ? "video/*" : "*/*";
-    }
-
-    private void onShareMultipleClicked() {
-        if (mMultiSelected == null) return;
-        if (mMultiSelected.size() > 1) {
-            Intent intent = new Intent();
-            intent.setAction(Intent.ACTION_SEND_MULTIPLE);
-
-            String mimeType = getShareMultipleMimeType();
-            intent.setType(mimeType);
-            ArrayList<Parcelable> list = new ArrayList<Parcelable>();
-            for (IImage image : mMultiSelected) {
-                list.add(image.fullSizeImageUri());
-            }
-            intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, list);
-            try {
-                startActivity(Intent.createChooser(
-                        intent, getText(R.string.send_media_files)));
-            } catch (android.content.ActivityNotFoundException ex) {
-                Toast.makeText(this, R.string.no_way_to_share,
-                        Toast.LENGTH_SHORT).show();
-            }
-        } else if (mMultiSelected.size() == 1) {
-            IImage image = mMultiSelected.iterator().next();
-            Intent intent = new Intent();
-            intent.setAction(Intent.ACTION_SEND);
-            String mimeType = image.getMimeType();
-            intent.setType(mimeType);
-            intent.putExtra(Intent.EXTRA_STREAM, image.fullSizeImageUri());
-            boolean isImage = ImageManager.isImage(image);
-            try {
-                startActivity(Intent.createChooser(intent, getText(
-                        isImage ? R.string.sendImage : R.string.sendVideo)));
-            } catch (android.content.ActivityNotFoundException ex) {
-                Toast.makeText(this, isImage
-                        ? R.string.no_way_to_share_image
-                        : R.string.no_way_to_share_video,
-                        Toast.LENGTH_SHORT).show();
-            }
-        }
     }
 
     private void onDeleteMultipleClicked() {

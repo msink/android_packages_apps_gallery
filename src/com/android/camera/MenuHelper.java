@@ -63,7 +63,6 @@ public class MenuHelper {
 
     public static final int INCLUDE_ALL           = 0xFFFFFFFF;
     public static final int INCLUDE_VIEWPLAY_MENU = (1 << 0);
-    public static final int INCLUDE_SHARE_MENU    = (1 << 1);
     public static final int INCLUDE_CROP_MENU     = (1 << 3);
     public static final int INCLUDE_DELETE_MENU   = (1 << 4);
     public static final int INCLUDE_ROTATE_MENU   = (1 << 5);
@@ -634,20 +633,6 @@ public class MenuHelper {
                     });
             requiresWriteAccessItems.add(autoCrop);
             requiresImageItems.add(autoCrop);
-        }
-
-        if ((inclusions & INCLUDE_SHARE_MENU) != 0) {
-            MenuItem item1 = menu.add(Menu.NONE, MENU_IMAGE_SHARE,
-                    POSITION_IMAGE_SHARE, R.string.camera_share)
-                    .setOnMenuItemClickListener(
-                    new MenuItem.OnMenuItemClickListener() {
-                        public boolean onMenuItemClick(MenuItem item) {
-                            return onImageShareClicked(onInvoke, activity);
-                        }
-                    });
-            item1.setIcon(android.R.drawable.ic_menu_share);
-            MenuItem item = item1;
-            requiresNoDrmAccessItems.add(item);
         }
 
         if ((inclusions & INCLUDE_DELETE_MENU) != 0) {
