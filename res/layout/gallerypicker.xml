@@ -27,7 +27,6 @@
         android:columnWidth="148dp"
         android:stretchMode="spacingWidthUniform"
         android:drawSelectorOnTop="false"
-        android:cacheColorHint="#000000"
-        android:background="#000000"
-        android:listSelector="#000000"/>
+        android:cacheColorHint="#ffffff"
+        android:background="#ffffff"/>
 </RelativeLayout>

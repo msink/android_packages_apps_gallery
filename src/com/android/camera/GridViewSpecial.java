@@ -956,11 +956,11 @@ class ImageBlockManager {
     private void initGraphics() {
         mBackgroundPaint = new Paint();
         mBackgroundPaint.setStyle(Paint.Style.FILL);
-        mBackgroundPaint.setColor(0xFF000000);  // black
+        mBackgroundPaint.setColor(0xFFFFFFFF);  // white
         mEmptyBitmap = Bitmap.createBitmap(mSpec.mCellWidth, mSpec.mCellHeight,
                 Bitmap.Config.RGB_565);
         Canvas canvas = new Canvas(mEmptyBitmap);
-        canvas.drawRGB(0xDD, 0xDD, 0xDD);
+        canvas.drawRGB(0xFF, 0xFF, 0xFF);
         canvas.drawBitmap(mOutline, 0, 0, null);
     }
 
@@ -981,7 +981,8 @@ class ImageBlockManager {
 
         public ImageBlock() {
             mBitmap = Bitmap.createBitmap(mBlockWidth, mBlockHeight,
-                    Bitmap.Config.RGB_565);
+                    Bitmap.Config.ARGB_8888);
+            mBitmap.eraseColor(0);
             mCanvas = new Canvas(mBitmap);
             mRow = -1;
         }

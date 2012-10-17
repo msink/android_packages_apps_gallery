@@ -29,6 +29,7 @@
                 android:layout_height="0dp"
                 android:layout_weight="1"
                 android:listSelector="@drawable/grid_background"
+                android:background="#ffffffff"
         />
 
         <LinearLayout android:id="@+id/footer_organize"
@@ -82,7 +83,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="@string/image_gallery_NoImageView_text"
-                android:textColor="#FFBEBEBE"
+                android:textColor="#FF000000"
                 android:textSize="18dp"
         />
     </RelativeLayout>
