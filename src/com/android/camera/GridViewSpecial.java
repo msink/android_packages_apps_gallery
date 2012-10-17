@@ -146,7 +146,6 @@ class GridViewSpecial extends View {
     }
 
     private void init(Context context) {
-        setVerticalScrollBarEnabled(true);
         initializeScrollbars(context.obtainStyledAttributes(
                 android.R.styleable.View));
         mGestureDetector = new GestureDetector(context,

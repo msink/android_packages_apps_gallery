@@ -102,16 +102,10 @@ public class ViewImage extends NoSearchActivity implements View.OnClickListener 
 
     private SharedPreferences mPrefs;
 
-    private View mNextImageView;
-    private View mPrevImageView;
     private final Animation mHideNextImageViewAnimation =
             new AlphaAnimation(1F, 0F);
     private final Animation mHidePrevImageViewAnimation =
             new AlphaAnimation(1F, 0F);
-    private final Animation mShowNextImageViewAnimation =
-            new AlphaAnimation(0F, 1F);
-    private final Animation mShowPrevImageViewAnimation =
-            new AlphaAnimation(0F, 1F);
 
     public static final String KEY_IMAGE_LIST = "image_list";
     private static final String STATE_SHOW_CONTROLS = "show_controls";
@@ -150,61 +144,11 @@ public class ViewImage extends NoSearchActivity implements View.OnClickListener 
     static final int ZOOM = 2;
     private int touchState = NONE;
 
-    private void updateNextPrevControls() {
-        boolean showPrev = mCurrentPosition > 0;
-        boolean showNext = mCurrentPosition < mAllImages.getCount() - 1;
-
-        boolean prevIsVisible = mPrevImageView.getVisibility() == View.VISIBLE;
-        boolean nextIsVisible = mNextImageView.getVisibility() == View.VISIBLE;
-
-        if (showPrev && !prevIsVisible) {
-            Animation a = mShowPrevImageViewAnimation;
-            a.setDuration(500);
-            mPrevImageView.startAnimation(a);
-            mPrevImageView.setVisibility(View.VISIBLE);
-        } else if (!showPrev && prevIsVisible) {
-            Animation a = mHidePrevImageViewAnimation;
-            a.setDuration(500);
-            mPrevImageView.startAnimation(a);
-            mPrevImageView.setVisibility(View.GONE);
-        }
-
-        if (showNext && !nextIsVisible) {
-            Animation a = mShowNextImageViewAnimation;
-            a.setDuration(500);
-            mNextImageView.startAnimation(a);
-            mNextImageView.setVisibility(View.VISIBLE);
-        } else if (!showNext && nextIsVisible) {
-            Animation a = mHideNextImageViewAnimation;
-            a.setDuration(500);
-            mNextImageView.startAnimation(a);
-            mNextImageView.setVisibility(View.GONE);
-        }
-    }
-
     private void hideOnScreenControls() {
         if (mShowActionIcons
                 && mActionIconPanel.getVisibility() == View.VISIBLE) {
-            Animation animation = new AlphaAnimation(1, 0);
-            animation.setDuration(500);
-            mActionIconPanel.startAnimation(animation);
             mActionIconPanel.setVisibility(View.INVISIBLE);
         }
-
-        if (mNextImageView.getVisibility() == View.VISIBLE) {
-            Animation a = mHideNextImageViewAnimation;
-            a.setDuration(500);
-            mNextImageView.startAnimation(a);
-            mNextImageView.setVisibility(View.INVISIBLE);
-        }
-
-        if (mPrevImageView.getVisibility() == View.VISIBLE) {
-            Animation a = mHidePrevImageViewAnimation;
-            a.setDuration(500);
-            mPrevImageView.startAnimation(a);
-            mPrevImageView.setVisibility(View.INVISIBLE);
-        }
-
         mZoomButtonsController.setVisible(false);
     }
 
@@ -221,7 +165,6 @@ public class ViewImage extends NoSearchActivity implements View.OnClickListener 
             });
             return;
         }
-        updateNextPrevControls();
 
         IImage image = mAllImages.getImageAt(mCurrentPosition);
         if (image instanceof VideoObject) {
@@ -233,9 +176,6 @@ public class ViewImage extends NoSearchActivity implements View.OnClickListener 
 
         if (mShowActionIcons
                 && mActionIconPanel.getVisibility() != View.VISIBLE) {
-            Animation animation = new AlphaAnimation(0, 1);
-            animation.setDuration(500);
-            mActionIconPanel.startAnimation(animation);
             mActionIconPanel.setVisibility(View.VISIBLE);
         }
     }
@@ -272,12 +212,6 @@ public class ViewImage extends NoSearchActivity implements View.OnClickListener 
     }
 
     private void setupOnScreenControls(View rootView, View ownerView) {
-        mNextImageView = rootView.findViewById(R.id.next_image);
-        mPrevImageView = rootView.findViewById(R.id.prev_image);
-
-        mNextImageView.setOnClickListener(this);
-        mPrevImageView.setOnClickListener(this);
-
         setupZoomButtonController(ownerView);
         setupOnTouchListeners(rootView);
     }
@@ -311,20 +245,8 @@ public class ViewImage extends NoSearchActivity implements View.OnClickListener 
     private void setupOnTouchListeners(View rootView) {
         mGestureDetector = new GestureDetector(this, new MyGestureListener());
 
-        // If the user touches anywhere on the panel (including the
-        // next/prev button). We show the on-screen controls. In addition
-        // to that, if the touch is not on the prev/next button, we
-        // pass the event to the gesture detector to detect double tap.
-        final OnTouchListener buttonListener = new OnTouchListener() {
-            public boolean onTouch(View v, MotionEvent event) {
-                scheduleDismissOnScreenControls();
-                return false;
-            }
-        };
-
         OnTouchListener rootListener = new OnTouchListener() {
             public boolean onTouch(View v, MotionEvent event) {
-                buttonListener.onTouch(v, event);
 
                 switch (event.getAction() & 0xFF) {
                 case MotionEvent.ACTION_DOWN:
@@ -388,8 +310,6 @@ public class ViewImage extends NoSearchActivity implements View.OnClickListener 
             }
         };
 
-        mNextImageView.setOnTouchListener(buttonListener);
-        mPrevImageView.setOnTouchListener(buttonListener);
         rootView.setOnTouchListener(rootListener);
     }
 
@@ -460,8 +380,6 @@ public class ViewImage extends NoSearchActivity implements View.OnClickListener 
         @Override
         public boolean onSingleTapConfirmed(MotionEvent e) {
             if (mPaused) return false;
-            showOnScreenControls();
-            scheduleDismissOnScreenControls();
             return true;
         }
 
@@ -662,8 +580,6 @@ public class ViewImage extends NoSearchActivity implements View.OnClickListener 
             mGetter.setPosition(pos, cb, mAllImages, mHandler);
         }
         updateActionIcons();
-        if (showControls) showOnScreenControls();
-        scheduleDismissOnScreenControls();
     }
 
     @Override
@@ -848,9 +764,6 @@ public class ViewImage extends NoSearchActivity implements View.OnClickListener 
             }
 
             if (mShowActionIcons) {
-                Animation animation = new AlphaAnimation(0F, 1F);
-                animation.setDuration(500);
-                mActionIconPanel.setAnimation(animation);
                 mActionIconPanel.setVisibility(View.VISIBLE);
             }
 
@@ -1150,12 +1063,6 @@ public class ViewImage extends NoSearchActivity implements View.OnClickListener 
                 }
                 break;
             }
-            case R.id.next_image:
-                moveNextOrPrevious(1);
-                break;
-            case R.id.prev_image:
-                moveNextOrPrevious(-1);
-                break;
         }
     }
 
@@ -1163,7 +1070,6 @@ public class ViewImage extends NoSearchActivity implements View.OnClickListener 
         int nextImagePos = mCurrentPosition + delta;
         if ((0 <= nextImagePos) && (nextImagePos < mAllImages.getCount())) {
             setImage(nextImagePos, true);
-            showOnScreenControls();
         }
     }
 
