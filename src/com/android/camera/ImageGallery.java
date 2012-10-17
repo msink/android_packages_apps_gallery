@@ -724,8 +724,6 @@ public class ImageGallery extends NoSearchActivity implements
                 }
 
                 if (isImage) {
-                    MenuHelper.enableShowOnMapMenuItem(
-                            menu, MenuHelper.hasLatLngData(image));
                     addSlideShowMenu(menu);
                 }
             }

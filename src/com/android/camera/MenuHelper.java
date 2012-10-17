@@ -67,7 +67,6 @@ public class MenuHelper {
     public static final int INCLUDE_DELETE_MENU   = (1 << 4);
     public static final int INCLUDE_ROTATE_MENU   = (1 << 5);
     public static final int INCLUDE_DETAILS_MENU  = (1 << 6);
-    public static final int INCLUDE_SHOWMAP_MENU  = (1 << 7);
 
     public static final int MENU_IMAGE_SHARE = 1;
     public static final int MENU_IMAGE_SHOWMAP = 2;
@@ -659,19 +658,6 @@ public class MenuHelper {
                 }
             });
             detailsMenu.setIcon(R.drawable.ic_menu_view_details);
-        }
-
-        if ((inclusions & INCLUDE_SHOWMAP_MENU) != 0) {
-            MenuItem showOnMapItem = menu.add(Menu.NONE, MENU_IMAGE_SHOWMAP,
-                    POSITION_SHOWMAP, R.string.show_on_map);
-            showOnMapItem.setOnMenuItemClickListener(
-                        new MenuItem.OnMenuItemClickListener() {
-                            public boolean onMenuItemClick(MenuItem item) {
-                                return onShowMapClicked(onInvoke,
-                                        handler, activity);
-                            }
-                        }).setIcon(R.drawable.ic_menu_3d_globe);
-            requiresImageItems.add(showOnMapItem);
         }
 
         if ((inclusions & INCLUDE_VIEWPLAY_MENU) != 0) {
