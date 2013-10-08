@@ -72,13 +72,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
         <com.android.camera.ActionMenuButton
-                android:id="@+id/setas"
-                android:visibility="gone"
-                android:drawableTop="@drawable/ic_menu_set_as"
-                android:text="@string/camera_set"
-                style="@style/OnscreenActionIcon"
-        />
-        <com.android.camera.ActionMenuButton
                 android:id="@+id/play"
                 android:visibility="gone"
                 android:drawableTop="@drawable/ic_menu_camera_play"

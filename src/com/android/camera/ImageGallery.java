@@ -258,6 +258,10 @@ public class ImageGallery extends NoSearchActivity implements
                             this, mDeletePhotoRunnable, getCurrentImage());
                 }
                 return true;
+            case KeyEvent.KEYCODE_DPAD_DOWN:
+                return true;
+            case KeyEvent.KEYCODE_DPAD_UP:
+                return true;
         }
         return super.onKeyDown(keyCode, event);
     }

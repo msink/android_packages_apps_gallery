@@ -388,7 +388,7 @@ public class MenuHelper {
                         : Formatter.formatFileSize(activity, length);
                 ((TextView) d
                     .findViewById(R.id.details_file_size_value))
-                    .setText(lengthString);
+                    .setVisibility(View.GONE);
 
                 d.findViewById(R.id.details_frame_rate_row)
                             .setVisibility(View.GONE);

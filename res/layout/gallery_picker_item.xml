@@ -34,7 +34,7 @@
             android:textSize="14sp"
             android:singleLine="true"
             android:textColor="#ff000000"
-            android:ellipsize="marquee"
+            android:ellipsize="start"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 </LinearLayout>

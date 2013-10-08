@@ -413,7 +413,7 @@ public class ViewImage extends NoSearchActivity implements View.OnClickListener 
         @Override
         public boolean onSingleTapConfirmed(MotionEvent e) {
             if (mPaused) return false;
-            return true;
+            return false;
         }
 
         @Override
@@ -497,7 +497,7 @@ public class ViewImage extends NoSearchActivity implements View.OnClickListener 
         item.setAlphabeticShortcut('p');
         item.setIcon(android.R.drawable.ic_menu_preferences);
 
-        return true;
+        return false;
     }
 
     protected Runnable mDeletePhotoRunnable = new Runnable() {
@@ -535,7 +535,7 @@ public class ViewImage extends NoSearchActivity implements View.OnClickListener 
 
         MenuHelper.enableShowOnMapMenuItem(menu, MenuHelper.hasLatLngData(image));
 
-        return true;
+        return false;
     }
 
     @Override
@@ -545,7 +545,7 @@ public class ViewImage extends NoSearchActivity implements View.OnClickListener 
             mImageMenuRunnable.aboutToCall(item,
                     mAllImages.getImageAt(mCurrentPosition));
         }
-        return b;
+        return false;
     }
 
     void setImage(int pos, boolean showControls) {
@@ -682,9 +682,10 @@ public class ViewImage extends NoSearchActivity implements View.OnClickListener 
         // applications like MMS, we cannot pass the permission to other
         // activities due to the current framework design.
         if (!MenuHelper.isWhiteListUri(mSavedUri)) {
-            mShowActionIcons = false;
+            mShowActionIcons = true;
         }
 
+        System.out.println("  onCreate  mShowActionIcons==" + mShowActionIcons);
         if (mShowActionIcons) {
             int[] pickIds = {R.id.attach, R.id.cancel};
             int[] normalIds = {R.id.play, R.id.discard, R.id.back};
@@ -887,6 +888,7 @@ public class ViewImage extends NoSearchActivity implements View.OnClickListener 
                         newView.setVisibility(View.VISIBLE);
                         newView.setImageRotateBitmapResetBase(bitmap, true);
                         newView.bringToFront();
+                        newView.requestEpdMode(View.EPD_FULL);
 
                         int animation = 0;
 
@@ -905,6 +907,7 @@ public class ViewImage extends NoSearchActivity implements View.OnClickListener 
                         Animation aOut = mSlideShowOutAnimation[animation];
                         oldView.setVisibility(View.INVISIBLE);
                         oldView.startAnimation(aOut);
+                        oldView.requestEpdMode(View.EPD_FULL);
 
                         mCurrentPosition = requestedPos;
 
@@ -1071,6 +1074,27 @@ public class ViewImage extends NoSearchActivity implements View.OnClickListener 
         }
     }
 
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        System.out.println("shy 0115 onKeyDown keyCode-->" + keyCode);
+        if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
+            System.out.println("shy 0115 onKeyDown next-->");
+            mImageView.requestEpdMode(View.EPD_FULL);
+            moveNextOrPrevious(1);
+            return true;
+        }
+        if (keyCode == KeyEvent.KEYCODE_DPAD_UP) {
+            System.out.println("shy 0115 onKeyDown prev-->");
+            mImageView.requestEpdMode(View.EPD_FULL);
+            moveNextOrPrevious(-1);
+            return true;
+        }
+        if (keyCode == KeyEvent.KEYCODE_MENU) {
+            System.out.println("shy 0115 onKeyDown menu-->");
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
     private void startPlayVideoActivity() {
         IImage image = mAllImages.getImageAt(mCurrentPosition);
         Intent intent = new Intent(
@@ -1096,18 +1120,6 @@ public class ViewImage extends NoSearchActivity implements View.OnClickListener 
                     return;
                 }
                 startShareMediaActivity(image);
-                break;
-            }
-            case R.id.setas: {
-                IImage image = mAllImages.getImageAt(mCurrentPosition);
-                Intent intent = Util.createSetAsIntent(image);
-                try {
-                    startActivity(Intent.createChooser(
-                            intent, getText(R.string.setImage)));
-                } catch (android.content.ActivityNotFoundException ex) {
-                    Toast.makeText(this, R.string.no_way_to_share_video,
-                            Toast.LENGTH_SHORT).show();
-                }
                 break;
             }
             case R.id.back:
@@ -1233,16 +1245,6 @@ class ImageViewTouch extends ImageViewTouchBase {
                         panBy(-PAN_RATE, 0);
                         center(true, false);
                     }
-                    return true;
-                }
-                case KeyEvent.KEYCODE_DPAD_UP: {
-                    panBy(0, PAN_RATE);
-                    center(false, true);
-                    return true;
-                }
-                case KeyEvent.KEYCODE_DPAD_DOWN: {
-                    panBy(0, -PAN_RATE);
-                    center(false, true);
                     return true;
                 }
                 case KeyEvent.KEYCODE_MENU: {
