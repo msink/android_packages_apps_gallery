@@ -59,8 +59,7 @@
                         android:text="@string/details_file_size"/>
                 <TextView android:id="@+id/details_file_size_value"
                         android:textAppearance="?android:attr/textAppearanceSmall"
-                        android:paddingLeft="5dip"
-                        android:textColor="?android:attr/textColorPrimary"/>
+                        android:paddingLeft="5dip"/>
             </TableRow>
 
             <TableRow android:id="@+id/details_resolution_row">
@@ -71,8 +70,7 @@
                         android:layout_height="wrap_content"
                         android:layout_width="match_parent"
                         android:textAppearance="?android:attr/textAppearanceSmall"
-                        android:paddingLeft="5dip"
-                        android:textColor="?android:attr/textColorPrimary"/>
+                        android:paddingLeft="5dip"/>
             </TableRow>
             <TableRow android:id="@+id/details_make_row">
                 <TextView android:gravity="right"
@@ -82,8 +80,7 @@
                         android:layout_height="wrap_content"
                         android:layout_width="match_parent"
                         android:textAppearance="?android:attr/textAppearanceSmall"
-                        android:paddingLeft="5dip"
-                        android:textColor="?android:attr/textColorPrimary"/>
+                        android:paddingLeft="5dip"/>
             </TableRow>
             <TableRow android:id="@+id/details_model_row">
                 <TextView android:gravity="right"
@@ -93,8 +90,7 @@
                         android:layout_height="wrap_content"
                         android:layout_width="match_parent"
                         android:textAppearance="?android:attr/textAppearanceSmall"
-                        android:paddingLeft="5dip"
-                        android:textColor="?android:attr/textColorPrimary"/>
+                        android:paddingLeft="5dip"/>
             </TableRow>
             <TableRow android:id="@+id/details_whitebalance_row">
                 <TextView android:gravity="right"
@@ -104,8 +100,7 @@
                         android:layout_height="wrap_content"
                         android:layout_width="match_parent"
                         android:textAppearance="?android:attr/textAppearanceSmall"
-                        android:paddingLeft="5dip"
-                        android:textColor="?android:attr/textColorPrimary"/>
+                        android:paddingLeft="5dip"/>
             </TableRow>
             <TableRow android:id="@+id/details_latitude_row">
                 <TextView android:gravity="right"
@@ -115,8 +110,7 @@
                         android:layout_height="wrap_content"
                         android:layout_width="match_parent"
                         android:textAppearance="?android:attr/textAppearanceSmall"
-                        android:paddingLeft="5dip"
-                        android:textColor="?android:attr/textColorPrimary"/>
+                        android:paddingLeft="5dip"/>
             </TableRow>
             <TableRow android:id="@+id/details_longitude_row"> <TextView
                         android:gravity="right"
@@ -126,8 +120,7 @@
                         android:layout_height="wrap_content"
                         android:layout_width="match_parent"
                         android:textAppearance="?android:attr/textAppearanceSmall"
-                        android:paddingLeft="5dip"
-                        android:textColor="?android:attr/textColorPrimary"/>
+                        android:paddingLeft="5dip"/>
             </TableRow>
             <TableRow android:id="@+id/details_location_row">
                 <TextView android:gravity="right"
@@ -137,8 +130,7 @@
                         android:layout_height="wrap_content"
                         android:layout_width="match_parent"
                         android:textAppearance="?android:attr/textAppearanceSmall"
-                        android:paddingLeft="5dip"
-                        android:textColor="?android:attr/textColorPrimary"/>
+                        android:paddingLeft="5dip"/>
             </TableRow>
             <TableRow android:id="@+id/details_duration_row">
                 <TextView android:gravity="right"
@@ -146,8 +138,7 @@
                         android:text="@string/details_duration"/>
                 <TextView android:id="@+id/details_duration_value"
                         android:textAppearance="?android:attr/textAppearanceSmall"
-                        android:paddingLeft="5dip"
-                        android:textColor="?android:attr/textColorPrimary"/>
+                        android:paddingLeft="5dip"/>
             </TableRow>
             <TableRow android:id="@+id/details_frame_rate_row">
                 <TextView android:gravity="right"
@@ -155,8 +146,7 @@
                         android:text="@string/details_frame_rate"/>
                 <TextView android:id="@+id/details_frame_rate_value"
                         android:textAppearance="?android:attr/textAppearanceSmall"
-                        android:paddingLeft="5dip"
-                        android:textColor="?android:attr/textColorPrimary"/>
+                        android:paddingLeft="5dip"/>
             </TableRow>
 
             <TableRow android:id="@+id/details_bit_rate_row">
@@ -165,8 +155,7 @@
                         android:text="@string/details_bit_rate"/>
                 <TextView android:id="@+id/details_bit_rate_value"
                         android:textAppearance="?android:attr/textAppearanceSmall"
-                        android:paddingLeft="5dip"
-                        android:textColor="?android:attr/textColorPrimary"/>
+                        android:paddingLeft="5dip"/>
             </TableRow>
             <TableRow android:id="@+id/details_format_row">
                 <TextView android:gravity="right"
@@ -174,8 +163,7 @@
                         android:text="@string/details_format"/>
                 <TextView android:id="@+id/details_format_value"
                         android:textAppearance="?android:attr/textAppearanceSmall"
-                        android:paddingLeft="5dip"
-                        android:textColor="?android:attr/textColorPrimary"/>
+                        android:paddingLeft="5dip"/>
             </TableRow>
             <TableRow android:id="@+id/details_codec_row">
                 <TextView android:gravity="right"
@@ -183,8 +171,7 @@
                         android:text="@string/details_codec"/>
                 <TextView android:id="@+id/details_codec_value"
                         android:textAppearance="?android:attr/textAppearanceSmall"
-                        android:paddingLeft="5dip"
-                        android:textColor="?android:attr/textColorPrimary"/>
+                        android:paddingLeft="5dip"/>
             </TableRow>
             <TableRow android:id="@+id/details_date_taken_row">
                 <TextView android:gravity="right"
@@ -192,8 +179,7 @@
                         android:text="@string/details_date_taken"/>
                 <TextView android:id="@+id/details_date_taken_value"
                         android:textAppearance="?android:attr/textAppearanceSmall"
-                        android:paddingLeft="5dip"
-                        android:textColor="?android:attr/textColorPrimary"/>
+                        android:paddingLeft="5dip"/>
             </TableRow>
         </TableLayout>
     </LinearLayout>

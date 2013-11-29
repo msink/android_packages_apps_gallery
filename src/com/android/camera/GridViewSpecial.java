@@ -32,6 +32,7 @@ import android.os.Handler;
 import android.os.PowerManager;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -447,6 +448,7 @@ class GridViewSpecial extends View {
         mRunning = true;
         PowerManager pm = (PowerManager) mContext.getSystemService(Context.POWER_SERVICE);
         wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "My_Tag");
+        Log.d(TAG, "--------------------------->>> start. acqire wakelock!");
         wl.acquire();
         requestLayout();
     }
@@ -473,6 +475,7 @@ class GridViewSpecial extends View {
         if (wl != null && wl.isHeld()) {
             wl.release();
             wl = null;
+            Log.d(TAG, "---------------------------!!! stop. release wakelock!");
         }
     }
 

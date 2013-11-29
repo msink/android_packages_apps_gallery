@@ -22,8 +22,10 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
+import android.hardware.DeviceController;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -31,6 +33,7 @@ import android.os.PowerManager;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.util.AttributeSet;
+import android.util.DisplayMetrics;
 import android.util.FloatMath;
 import android.util.Log;
 import android.view.GestureDetector;
@@ -52,6 +55,8 @@ import com.android.camera.gallery.IImage;
 import com.android.camera.gallery.IImageList;
 import com.android.camera.gallery.VideoObject;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.Random;
 
 // This activity can display a whole picture and navigate them in a specific
@@ -413,7 +418,18 @@ public class ViewImage extends NoSearchActivity implements View.OnClickListener 
         @Override
         public boolean onSingleTapConfirmed(MotionEvent e) {
             if (mPaused) return false;
-            return true;
+            if (mImageView.getScale() != 1) return true;
+            DisplayMetrics metrics = new DisplayMetrics();
+            getWindowManager().getDefaultDisplay().getMetrics(metrics);
+            int width = metrics.widthPixels;
+            if (e.getX() < width / 2) {
+                setEpd_full();
+                moveNextOrPrevious(-1);
+            } else {
+                setEpd_full();
+                moveNextOrPrevious(1);
+            }
+            return false;
         }
 
         @Override
@@ -677,6 +693,11 @@ public class ViewImage extends NoSearchActivity implements View.OnClickListener 
             slideshow = intent.getBooleanExtra(EXTRA_SLIDESHOW, false);
         }
 
+        DeviceController dev = new DeviceController(this);
+        if (!dev.isTouchable()) {
+            mShowActionIcons = false;
+        }
+
         // We only show action icons for URIs that we know we can share and
         // delete. Although we get read permission (for the images) from
         // applications like MMS, we cannot pass the permission to other
@@ -698,6 +719,8 @@ public class ViewImage extends NoSearchActivity implements View.OnClickListener 
 
         // Don't show the "delete" icon for SingleImageList.
         if (ImageManager.isSingleImageMode(mSavedUri.toString())) {
+            Uri mTempUri = pathToUri(mSavedUri.toString());
+            if (mTempUri != null) mSavedUri = mTempUri;
             mActionIconPanel.findViewById(R.id.discard)
                     .setVisibility(View.GONE);
         }
@@ -716,6 +739,36 @@ public class ViewImage extends NoSearchActivity implements View.OnClickListener 
 
         setupOnScreenControls(findViewById(R.id.rootLayout), mImageView);
         mImageView.requestEpdMode(View.EPD_FULL);
+    }
+
+    private Uri pathToUri(String path) {
+        String decodePath = null;
+        try {
+            decodePath = URLDecoder.decode(path, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        String[] str_arry = decodePath.split("/");
+        String final_path = "";
+        for (int i = 3; i < str_arry.length; i++) {
+            final_path = final_path + "/" + str_arry[i];
+        }
+        Uri mUri = Uri.parse("content://media/external/images/media/");
+        Uri mImageUri = null;
+        Cursor c = managedQuery(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                                null, null, null, "bucket_display_name");
+        c.moveToFirst();
+        while (!c.isAfterLast()) {
+            String data = c.getString(c.getColumnIndex("_data"));
+            if (final_path.equals(data)) {
+                int id = c.getInt(c.getColumnIndex("_id"));
+                mImageUri = Uri.withAppendedPath(mUri, "" + id);
+                break;
+            }
+            c.moveToNext();
+        }
+        c.close();
+        return mImageUri;
     }
 
     private void updateActionIcons() {
@@ -1156,6 +1209,10 @@ public class ViewImage extends NoSearchActivity implements View.OnClickListener 
                 break;
         }
     }
+
+    protected void setEpd_full() {
+        mImageView.requestEpdMode(View.EPD_FULL);
+    }
 }
 
 class ImageViewTouch extends ImageViewTouchBase {
@@ -1235,6 +1292,20 @@ class ImageViewTouch extends ImageViewTouchBase {
                     }
                     return true;
                 }
+                case KeyEvent.KEYCODE_PAGE_UP: {
+                    if (event.getEventTime() >= mNextChangePositionTime) {
+                        nextImagePos = current - 1;
+                        mNextChangePositionTime = event.getEventTime() + 500;
+                    }
+                    return true;
+                }
+                case KeyEvent.KEYCODE_PAGE_DOWN: {
+                    if (event.getEventTime() >= mNextChangePositionTime) {
+                        nextImagePos = current + 1;
+                        mNextChangePositionTime = event.getEventTime() + 500;
+                    }
+                    return true;
+                }
                 case KeyEvent.KEYCODE_DPAD_UP: {
                     panBy(0, PAN_RATE);
                     center(false, true);
@@ -1243,9 +1314,6 @@ class ImageViewTouch extends ImageViewTouchBase {
                 case KeyEvent.KEYCODE_DPAD_DOWN: {
                     panBy(0, -PAN_RATE);
                     center(false, true);
-                    return true;
-                }
-                case KeyEvent.KEYCODE_MENU: {
                     return true;
                 }
                 case KeyEvent.KEYCODE_DEL:
@@ -1257,8 +1325,10 @@ class ImageViewTouch extends ImageViewTouchBase {
             if (nextImagePos >= 0
                     && nextImagePos < mViewImage.mAllImages.getCount()) {
                 synchronized (mViewImage) {
+                    mViewImage.setEpd_full();
                     mViewImage.setMode(ViewImage.MODE_NORMAL);
                     mViewImage.setImage(nextImagePos, true);
+                    if (getScale() > 1) zoomTo(1);
                 }
            } else if (nextImagePos != -2) {
                center(true, true);

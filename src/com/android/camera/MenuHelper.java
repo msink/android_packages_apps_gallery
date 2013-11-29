@@ -25,6 +25,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.DialogInterface.OnClickListener;
+import android.hardware.DeviceController;
 import android.location.Geocoder;
 import android.media.ExifInterface;
 import android.media.MediaMetadataRetriever;
@@ -41,6 +42,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.SubMenu;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -450,14 +452,20 @@ public class MenuHelper {
                             }
                         });
 
+                final AlertDialog alertD = builder.create();
                 handler.post(
                         new Runnable() {
                             public void run() {
-                                builder.setIcon(
-                                        android.R.drawable.ic_dialog_info)
-                                        .setTitle(R.string.details_panel_title)
-                                        .setView(d)
-                                        .show();
+                                alertD.setIcon(android.R.drawable.ic_dialog_info);
+                                alertD.setTitle(R.string.details_panel_title);
+                                alertD.setView(d);
+                                alertD.show();
+                                Button neutralButton =
+                                    alertD.getButton(AlertDialog.BUTTON_NEUTRAL);
+                                if (neutralButton != null) {
+                                    neutralButton.requestFocus();
+                                }
+
                             }
                         });
             }
@@ -585,6 +593,7 @@ public class MenuHelper {
                 new ArrayList<MenuItem>();
         final ArrayList<MenuItem> requiresVideoItems =
                 new ArrayList<MenuItem>();
+        DeviceController mDev = new DeviceController(activity);
 
         if ((inclusions & INCLUDE_ROTATE_MENU) != 0) {
             SubMenu rotateSubmenu = menu.addSubMenu(Menu.NONE, Menu.NONE,
@@ -619,7 +628,8 @@ public class MenuHelper {
             requiresImageItems.add(rotateRight);
         }
 
-        if ((inclusions & INCLUDE_CROP_MENU) != 0) {
+        if ((mDev.hasIR() || mDev.hasTP()) &&
+            (inclusions & INCLUDE_CROP_MENU) != 0) {
             MenuItem autoCrop = menu.add(Menu.NONE, Menu.NONE,
                     POSITION_IMAGE_CROP, R.string.camera_crop);
             autoCrop.setIcon(android.R.drawable.ic_menu_crop);

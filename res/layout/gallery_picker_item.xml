@@ -31,10 +31,10 @@
             android:paddingRight="13dip"
             android:paddingLeft="13dip"
             android:gravity="top|center_horizontal"
-            android:textSize="14sp"
+            android:textSize="19sp"
             android:singleLine="true"
             android:textColor="#ff000000"
-            android:ellipsize="marquee"
+            android:ellipsize="middle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 </LinearLayout>
