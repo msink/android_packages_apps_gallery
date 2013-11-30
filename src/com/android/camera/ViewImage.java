@@ -941,10 +941,8 @@ public class ViewImage extends NoSearchActivity implements View.OnClickListener 
                 pos = mShuffleOrder[pos];
             }
             mGetter.setPosition(pos, cb, mAllImages, mHandler);
-            if (wl != null && wl.isHeld()) {
-                wl.release();
-                wl = null;
-            }
+            Log.d("yyx", "releaseWakeLock---------------->");
+            ImageGallery.releaseWakeLock();
         }
     }
 
