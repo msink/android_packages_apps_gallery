@@ -38,6 +38,7 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.BatteryManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Parcelable;
@@ -52,10 +53,12 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
+import android.view.WindowManager;
 import android.view.View.OnClickListener;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -103,24 +106,76 @@ public class ImageGallery extends NoSearchActivity implements
 
     private HashSet<IImage> mMultiSelected = null;
 
+    private ImageView imgBatteryView;
+    private int batteryBgResourceID = -1;
+
+    public static boolean info = false;
+    private static Context mContext;
+    private TextView txtTitle;
+    static WakeLock wl;
+
+    private BroadcastReceiver mBatteryInfoReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            int level = intent.getIntExtra("level", 0);
+            int scale = intent.getIntExtra("scale", 100);
+            int status = intent.getIntExtra("status", 0);
+            if (Intent.ACTION_BATTERY_CHANGED.equals(action)) {
+                switch (status) {
+                case BatteryManager.BATTERY_STATUS_UNKNOWN:
+                case BatteryManager.BATTERY_STATUS_NOT_CHARGING:
+                default:
+                    batteryBgResourceID = getChargingIcon((level * 100) / scale);
+                    break;
+                case BatteryManager.BATTERY_STATUS_CHARGING:
+                    batteryBgResourceID = R.drawable.battery7;
+                    break;
+                case BatteryManager.BATTERY_STATUS_FULL:
+                    batteryBgResourceID = R.drawable.battery1;
+                    break;
+                }
+                imgBatteryView.setBackgroundResource(batteryBgResourceID);
+            }
+        }
+    };
+
+    private int getChargingIcon(int batteryHealth) {
+        if (batteryHealth >= 0 && batteryHealth < 20)
+            return R.drawable.battery6;
+        if (batteryHealth >= 20 && batteryHealth < 40)
+            return R.drawable.battery5;
+        if (batteryHealth >= 40 && batteryHealth < 60)
+            return R.drawable.battery4;
+        if (batteryHealth >= 60 && batteryHealth < 80)
+            return R.drawable.battery3;
+        if (batteryHealth >= 80 && batteryHealth < 95)
+            return R.drawable.battery2;
+        if (batteryHealth >= 95 && batteryHealth <= 100)
+            return R.drawable.battery1;
+        else
+            return R.drawable.battery6;
+    }
+
     @Override
     public void onCreate(Bundle icicle) {
         super.onCreate(icicle);
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                             WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
         mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
-
-        // Must be called before setContentView().
-        requestWindowFeature(Window.FEATURE_CUSTOM_TITLE);
+        mContext = this;
 
         setContentView(R.layout.image_gallery);
-
-        getWindow().setFeatureInt(Window.FEATURE_CUSTOM_TITLE,
-                R.layout.custom_gallery_title);
 
         mNoImagesView = findViewById(R.id.no_images);
 
         mGvs = (GridViewSpecial) findViewById(R.id.grid);
         mGvs.setListener(this);
+
+        imgBatteryView = (ImageView) findViewById(R.id.image_battery);
+        txtTitle = (TextView) findViewById(R.id.title);
 
         mFooterOrganizeView = findViewById(R.id.footer_organize);
 
@@ -141,6 +196,20 @@ public class ImageGallery extends NoSearchActivity implements
         mInclusion &= ~ImageManager.INCLUDE_VIDEOS;
 
         mLoader = new ImageLoader(getContentResolver(), mHandler);
+
+        new BroadcastReceiver() {
+            public void onReceive(Context context, Intent intent) {
+                int level = intent.getIntExtra("level", 0);
+                int scale = intent.getIntExtra("scale", 100);
+                int status = intent.getIntExtra("status", 0);
+                if (status == BatteryManager.BATTERY_STATUS_CHARGING) {
+                    batteryBgResourceID = R.drawable.battery7;
+                } else {
+                    batteryBgResourceID = getChargingIcon((level * 100) / scale);
+                }
+                imgBatteryView.setBackgroundResource(batteryBgResourceID);
+            }
+        };
     }
 
     private void initializeFooterButtons() {
@@ -358,6 +427,7 @@ public class ImageGallery extends NoSearchActivity implements
 
     @Override
     public void onPause() {
+        unregisterReceiver(mBatteryInfoReceiver);
         super.onPause();
         mPausing = true;
 
@@ -391,7 +461,7 @@ public class ImageGallery extends NoSearchActivity implements
         if (scanning) {
             mMediaScanningDialog = ProgressDialog.show(
                     this,
-                    null,
+                    getResources().getString(R.string.wait),
                     getResources().getString(R.string.wait),
                     true,
                     true);
@@ -427,6 +497,7 @@ public class ImageGallery extends NoSearchActivity implements
     @Override
     public void onResume() {
         super.onResume();
+        registerReceiver(mBatteryInfoReceiver, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
 
         mGvs.setSizeChoice(Integer.parseInt(
                 mPrefs.getString("pref_gallery_size_key", "1")));
@@ -563,22 +634,21 @@ public class ImageGallery extends NoSearchActivity implements
         Intent intent = getIntent();
         if (intent != null) {
             String type = intent.resolveType(this);
-            TextView leftText = (TextView) findViewById(R.id.left_text);
             if (type != null) {
                 if (isImageType(type)) {
                     mInclusion = ImageManager.INCLUDE_IMAGES;
                     if (isPickIntent()) {
-                        leftText.setText(R.string.pick_photos_gallery_title);
+                        txtTitle.setText(R.string.pick_photos_gallery_title);
                     } else {
-                        leftText.setText(R.string.photos_gallery_title);
+                        txtTitle.setText(R.string.photos_gallery_title);
                     }
                 }
                 if (isVideoType(type)) {
                     mInclusion = ImageManager.INCLUDE_VIDEOS;
                     if (isPickIntent()) {
-                        leftText.setText(R.string.pick_videos_gallery_title);
+                        txtTitle.setText(R.string.pick_videos_gallery_title);
                     } else {
-                        leftText.setText(R.string.videos_gallery_title);
+                        txtTitle.setText(R.string.videos_gallery_title);
                     }
                 }
             }
@@ -587,7 +657,7 @@ public class ImageGallery extends NoSearchActivity implements
                     ? extras.getString("windowTitle")
                     : null;
             if (title != null && title.length() > 0) {
-                leftText.setText(title);
+                txtTitle.setText(title);
             }
 
             if (extras != null) {

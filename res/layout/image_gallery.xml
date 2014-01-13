@@ -18,7 +18,37 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
+    <RelativeLayout
+                android:id="@+id/relate_title"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:gravity="center_vertical">
+        <TextView
+                android:id="@+id/title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:paddingLeft="10px"
+                android:textSize="21sp"
+                android:textStyle="bold"
+                android:textColor="#ffffffff"
+                android:background="@drawable/gallery_title"
+                android:text="@string/camera_pick_wallpaper"
+                />
+        <ImageView
+                android:id="@+id/image_battery"
+                android:layout_width="40px"
+                android:layout_height="17px"
+                android:layout_marginTop="12px"
+                android:layout_marginRight="20px"
+                android:layout_alignParentRight="true"
+                android:background="@drawable/battery1"
+                />
+    </RelativeLayout>
+
     <LinearLayout android:orientation="vertical"
+                android:layout_below="@id/relate_title"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
 

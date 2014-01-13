@@ -40,6 +40,7 @@ import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.BatteryManager;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -56,9 +57,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.MenuItem.OnMenuItemClickListener;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.GridView;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.AdapterView.AdapterContextMenuInfo;
@@ -82,13 +86,64 @@ public class GalleryPicker extends NoSearchActivity {
     boolean mScanning;
     boolean mUnmounted;
 
+    private ImageView imgBatteryView;
+    private int batteryBgResourceID = -1;
+
+    private BroadcastReceiver mBatteryInfoReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            int level = intent.getIntExtra("level", 0);
+            int scale = intent.getIntExtra("scale", 100);
+            int status = intent.getIntExtra("status", 0);
+            if (Intent.ACTION_BATTERY_CHANGED.equals(action)) {
+                switch (status) {
+                case BatteryManager.BATTERY_STATUS_UNKNOWN:
+                case BatteryManager.BATTERY_STATUS_NOT_CHARGING:
+                default:
+                    batteryBgResourceID = getChargingIcon((level * 100) / scale);
+                    break;
+                case BatteryManager.BATTERY_STATUS_CHARGING:
+                    batteryBgResourceID = R.drawable.battery7;
+                    break;
+                case BatteryManager.BATTERY_STATUS_FULL:
+                    batteryBgResourceID = R.drawable.battery1;
+                    break;
+                }
+                imgBatteryView.setBackgroundResource(batteryBgResourceID);
+            }
+        }
+    };
+
+    private int getChargingIcon(int batteryHealth) {
+        if (batteryHealth >= 0 && batteryHealth < 20)
+            return R.drawable.battery6;
+        if (batteryHealth >= 20 && batteryHealth < 40)
+            return R.drawable.battery5;
+        if (batteryHealth >= 40 && batteryHealth < 60)
+            return R.drawable.battery4;
+        if (batteryHealth >= 60 && batteryHealth < 80)
+            return R.drawable.battery3;
+        if (batteryHealth >= 80 && batteryHealth < 95)
+            return R.drawable.battery2;
+        if (batteryHealth >= 95 && batteryHealth <= 100)
+            return R.drawable.battery1;
+        else
+            return R.drawable.battery6;
+    }
+
     @Override
     public void onCreate(Bundle icicle) {
         super.onCreate(icicle);
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                             WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
         setContentView(R.layout.gallerypicker);
 
         mGridView = (GridView) findViewById(R.id.albums);
+
+        imgBatteryView = (ImageView) findViewById(R.id.image_battery);
 
         mGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> parent, View view,
@@ -120,6 +175,20 @@ public class GalleryPicker extends NoSearchActivity {
             }
         };
 
+        new BroadcastReceiver() {
+            public void onReceive(Context context, Intent intent) {
+                int level = intent.getIntExtra("level", 0);
+                int scale = intent.getIntExtra("scale", 100);
+                int status = intent.getIntExtra("status", 0);
+                if (status == BatteryManager.BATTERY_STATUS_CHARGING) {
+                    batteryBgResourceID = R.drawable.battery7;
+                } else {
+                    batteryBgResourceID = getChargingIcon((level * 100) / scale);
+                }
+                imgBatteryView.setBackgroundResource(batteryBgResourceID);
+            }
+        };
+
         ImageManager.ensureOSXCompatibleFolder();
     }
 
@@ -147,7 +216,7 @@ public class GalleryPicker extends NoSearchActivity {
         } else if (scanning && mAdapter.mItems.size() == 0) {
             mMediaScanningDialog = ProgressDialog.show(
                     this,
-                    null,
+                    getResources().getString(R.string.wait),
                     getResources().getString(R.string.wait),
                     true,
                     true);
@@ -264,8 +333,15 @@ public class GalleryPicker extends NoSearchActivity {
     }
 
     @Override
+    protected void onResume() {
+        registerReceiver(mBatteryInfoReceiver, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
+        super.onResume();
+    }
+
+    @Override
     public void onStop() {
         super.onStop();
+        unregisterReceiver(mBatteryInfoReceiver);
 
         abortWorker();
 
