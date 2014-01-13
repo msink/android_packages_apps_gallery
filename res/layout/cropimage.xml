@@ -42,6 +42,7 @@
                     android:layout_width="100dip"
                     android:layout_height="wrap_content"
                     android:layout_alignParentLeft="true"
+                    android:background="@drawable/btn_background"
                     android:text="@string/crop_save_text"
             />
             <Button
@@ -49,6 +50,7 @@
                     android:layout_width="100dip"
                     android:layout_height="wrap_content"
                     android:layout_alignParentRight="true"
+                    android:background="@drawable/btn_background"
                     android:text="@string/crop_discard_text"
             />
         </RelativeLayout>

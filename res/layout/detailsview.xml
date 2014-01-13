@@ -59,14 +59,12 @@
                         android:text="@string/details_file_size"/>
                 <TextView android:id="@+id/details_file_size_value"
                         android:textAppearance="?android:attr/textAppearanceSmall"
-                        android:paddingLeft="5dip"
-                        android:textColor="?android:attr/textColorPrimary"/>
+                        android:paddingLeft="5dip"/>
             </TableRow>
 
             <TableRow android:id="@+id/details_resolution_row">
                 <TextView android:gravity="right"
-                        android:textAppearance="?android:attr/textAppearanceSmall"
-                        android:text="@string/details_image_resolution"/>
+                        android:textAppearance="?android:attr/textAppearanceSmall"/>
                 <TextView android:id="@+id/details_resolution_value"
                         android:layout_height="wrap_content"
                         android:layout_width="match_parent"
@@ -76,8 +74,7 @@
             </TableRow>
             <TableRow android:id="@+id/details_make_row">
                 <TextView android:gravity="right"
-                        android:textAppearance="?android:attr/textAppearanceSmall"
-                        android:text="@string/details_image_make"/>
+                        android:textAppearance="?android:attr/textAppearanceSmall"/>
                 <TextView android:id="@+id/details_make_value"
                         android:layout_height="wrap_content"
                         android:layout_width="match_parent"
@@ -173,9 +170,9 @@
                         android:textAppearance="?android:attr/textAppearanceSmall"
                         android:text="@string/details_format"/>
                 <TextView android:id="@+id/details_format_value"
-                        android:textAppearance="?android:attr/textAppearanceSmall"
-                        android:paddingLeft="5dip"
-                        android:textColor="?android:attr/textColorPrimary"/>
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:paddingLeft="5dip"/>
             </TableRow>
             <TableRow android:id="@+id/details_codec_row">
                 <TextView android:gravity="right"
@@ -188,8 +185,7 @@
             </TableRow>
             <TableRow android:id="@+id/details_date_taken_row">
                 <TextView android:gravity="right"
-                        android:textAppearance="?android:attr/textAppearanceSmall"
-                        android:text="@string/details_date_taken"/>
+                        android:textAppearance="?android:attr/textAppearanceSmall"/>
                 <TextView android:id="@+id/details_date_taken_value"
                         android:textAppearance="?android:attr/textAppearanceSmall"
                         android:paddingLeft="5dip"

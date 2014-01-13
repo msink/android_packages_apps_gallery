@@ -445,6 +445,7 @@ class GridViewSpecial extends View {
         Assert(mListener != null);
         Assert(mDrawAdapter != null);
         mRunning = true;
+        System.out.println("shy GridViewSpecial start racquire ......");
         PowerManager pm = (PowerManager) mContext.getSystemService(Context.POWER_SERVICE);
         wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "My_Tag");
         wl.acquire();
@@ -471,6 +472,7 @@ class GridViewSpecial extends View {
         mRunning = false;
         mCurrentSelection = INDEX_NONE;
         if (wl != null && wl.isHeld()) {
+            System.out.println("shy GridViewSpecial start release ......");
             wl.release();
             wl = null;
         }

@@ -41,6 +41,8 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Parcelable;
+import android.os.PowerManager;
+import android.os.PowerManager.WakeLock;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.util.Log;
@@ -163,6 +165,8 @@ public class ImageGallery extends NoSearchActivity implements
                 .setOnMenuItemClickListener(
                 new MenuItem.OnMenuItemClickListener() {
                     public boolean onMenuItemClick(MenuItem item) {
+                        Log.d("yyx", "acquireWakeLock------------->yyx");
+                        acquireWakeLock();
                         return onSlideShowClicked();
                     }
                 }).setIcon(android.R.drawable.ic_menu_slideshow);
@@ -257,6 +261,10 @@ public class ImageGallery extends NoSearchActivity implements
                     MenuHelper.deleteImage(
                             this, mDeletePhotoRunnable, getCurrentImage());
                 }
+                return true;
+            case KeyEvent.KEYCODE_DPAD_DOWN:
+                return true;
+            case KeyEvent.KEYCODE_DPAD_UP:
                 return true;
         }
         return super.onKeyDown(keyCode, event);
@@ -464,6 +472,8 @@ public class ImageGallery extends NoSearchActivity implements
         registerReceiver(mReceiver, intentFilter);
         rebake(false, ImageManager.isMediaScannerScanning(
                 getContentResolver()));
+        releaseWakeLock2();
+        Log.d("yyx", "releaseWakeLock______onResume------------->");
     }
 
     @Override
@@ -649,6 +659,9 @@ public class ImageGallery extends NoSearchActivity implements
                 intent = new Intent(this, ViewImage.class);
                 intent.putExtra(ViewImage.KEY_IMAGE_LIST, mParam);
                 intent.setData(image.fullSizeImageUri());
+                Bundle open = new Bundle();
+                open.putString("open", "open");
+                intent.putExtras(open);
             }
             startActivity(intent);
         }
@@ -675,6 +688,7 @@ public class ImageGallery extends NoSearchActivity implements
             View.OnCreateContextMenuListener {
         public void onCreateContextMenu(ContextMenu menu, View v,
                 ContextMenu.ContextMenuInfo menuInfo) {
+            Log.d("yyx", " onCreateContextMenu--------------------->");
             if (!canHandleEvent()) return;
 
             IImage image = getCurrentImage();
@@ -971,4 +985,27 @@ public class ImageGallery extends NoSearchActivity implements
         mGvs.invalidate();
     }
 
+    private void acquireWakeLock() {
+        if (wl == null) {
+            PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+            wl = pm.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK |
+                                PowerManager.ON_AFTER_RELEASE, "My_Tag");
+            wl.acquire();
+        }
+    }
+
+    public static void releaseWakeLock() {
+        if (wl != null && wl.isHeld()) {
+            wl.release();
+            wl = null;
+        }
+    }
+
+    public void releaseWakeLock2() {
+        if (wl != null && wl.isHeld()) {
+            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+            wl.release();
+            wl = null;
+        }
+    }
 }

@@ -49,7 +49,7 @@
     <string name="view_label">View picture</string>
 
     <!-- menu pick: go to the preferences screen for the camera or image gallery -->
-    <string name="preferences_label">Camera settings</string>
+    <string name="preferences_label">settings</string>
 
     <!-- alert to the user to wait for some operation to complete -->
     <string name="wait">Please wait\u2026</string>
@@ -176,7 +176,7 @@
     <string name="pref_gallery_size_title">Display size</string>
 
     <!-- Settings screen, title for preference for image size to be used in the im -->
-    <string name="pref_gallery_size_summary">Select the display size of pictures and videos</string>
+    <string name="pref_gallery_size_summary">Select the display size of pictures</string>
     <!-- Title of dialog that appears after selecting Picture size setting option -->
     <string name="pref_gallery_size_dialogtitle">Picture size</string>
     <!-- Options in dialog that appears after selecting Picture size setting option -->
@@ -196,7 +196,7 @@
     <!-- Settings screen, setting option name -->
     <string name="pref_gallery_sort_title">Sort order</string>
     <!-- Settings screen, setting summary text -->
-    <string name="pref_gallery_sort_summary">Select the sort order of pictures and videos</string>
+    <string name="pref_gallery_sort_summary">Select the sort order of pictures</string>
     <!-- Title of dialog that appears after selecting Picture sort setting option -->
     <string name="pref_gallery_sort_dialogtitle">Picture sort</string>
     <!-- Options in dialog that appears after selecting Picture sort setting option -->
@@ -406,6 +406,11 @@
 
     <!-- Title shown on the button which will close the multiselction mode -->
     <string name="multiselect_cancel">Cancel</string>
+
+    <string name="Zoom">Zoom</string>
+    <string name="first">90°</string>
+    <string name="second">180°</string>
+    <string name="thrid">270°</string>
 
     <!-- The messsage shown on progress dialog when deleting images -->
     <string name="delete_images_message">Deleting images, please wait\u2026</string>

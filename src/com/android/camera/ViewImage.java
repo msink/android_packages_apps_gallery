@@ -19,7 +19,11 @@ package com.android.camera;
 import com.android.gallery.R;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnClickListener;
+import android.content.DialogInterface.OnDismissListener;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
@@ -33,6 +37,7 @@ import android.provider.MediaStore;
 import android.util.AttributeSet;
 import android.util.FloatMath;
 import android.util.Log;
+import android.view.ContextMenu;
 import android.view.GestureDetector;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -153,6 +158,10 @@ public class ViewImage extends NoSearchActivity implements View.OnClickListener 
     static final int ZOOM = 2;
     private int touchState = NONE;
 
+    public static boolean showout = false;
+    private View viewback;
+    Bitmap b;
+
     private void hideOnScreenControls() {
         if (mShowActionIcons
                 && mActionIconPanel.getVisibility() == View.VISIBLE) {
@@ -265,7 +274,6 @@ public class ViewImage extends NoSearchActivity implements View.OnClickListener 
                     saveMatrix.set(matrix);
                     break;
                 case MotionEvent.ACTION_POINTER_1_DOWN:
-                    Log.d("onTouch", "ACTION_POINTER_DOWN");
                     saveDistance = calcDistance(event);
                     if (saveDistance > MIN_DIST) {
                         saveMatrix.set(matrix);
@@ -276,8 +284,21 @@ public class ViewImage extends NoSearchActivity implements View.OnClickListener 
                     if (event.getPointerCount() != 2)
                         break;
                     if (touchState == DRAG) {
+                    } else if (touchState == ZOOM) {
+                        float distance = calcDistance(event);
+                        calcMidpoint(centerX, centerY, event);
+                        if (distance > MIN_DIST) {
+                            matrix.set(saveMatrix);
+                            float scale = (distance / saveDistance);
+                            if (Math.abs(scale) > 1) {
+                                mImageView.zoomIn();
+                                mIsInZoomIn = true;
+                            } else if (scale < 1) {
+                                mImageView.zoomOut();
+                                mIsInZoomIn = true;
+                            }
+                        }
                     }
-                    Log.d("onTouch", "ACTION_MOVE");
                     break;
                 case MotionEvent.ACTION_UP:
                 case MotionEvent.ACTION_POINTER_1_UP:
@@ -287,7 +308,6 @@ public class ViewImage extends NoSearchActivity implements View.OnClickListener 
                         if (distance > MIN_DIST) {
                             matrix.set(saveMatrix);
                             float scale = (distance / saveDistance);
-                            Log.d("onTouch", "scale = " + scale);
                             if (Math.abs(scale) > 1) {
                                 mImageView.requestEpdMode(View.EPD_FULL);
                                 mImageView.zoomIn();
@@ -315,7 +335,6 @@ public class ViewImage extends NoSearchActivity implements View.OnClickListener 
                         mImageView.invalidate();
                     }
                     if (mImageView.getScale() == 1) {
-                        Log.d(TAG, "ACTION_UP, mIsInZoomIn mode is false");
                         mIsInZoomIn = false;
                     }
                 }
@@ -384,7 +403,6 @@ public class ViewImage extends NoSearchActivity implements View.OnClickListener 
             float deltaX = e1.getX() - e2.getX();
             if (deltaY > swipeMinDistance &&
                     deltaY > Math.abs(deltaX)) {
-                showOnScreenControls();
             } else if (-deltaY > swipeMinDistance &&
                     -deltaY > Math.abs(deltaX)) {
                 hideOnScreenControls();
@@ -413,24 +431,11 @@ public class ViewImage extends NoSearchActivity implements View.OnClickListener 
         @Override
         public boolean onSingleTapConfirmed(MotionEvent e) {
             if (mPaused) return false;
-            return true;
+            return false;
         }
 
         @Override
         public boolean onDoubleTap(MotionEvent e) {
-            if (mPaused) return false;
-            ImageViewTouch imageView = mImageView;
-
-            // Switch between the original scale and 3x scale.
-            if (imageView.getScale() > 2F) {
-                mIsInZoomIn = false;
-                mImageView.requestEpdMode(View.EPD_FULL);
-                mImageView.zoomTo(1f);
-            } else {
-                mIsInZoomIn = true;
-                mImageView.requestEpdMode(View.EPD_FULL);
-                mImageView.zoomToPoint(3f, e.getX(), e.getY());
-            }
             return true;
         }
     }
@@ -444,6 +449,7 @@ public class ViewImage extends NoSearchActivity implements View.OnClickListener 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         super.onCreateOptionsMenu(menu);
+        System.out.println("onCreateOptionsMenu-----yiyuxiang------>");
 
         MenuItem item = menu.add(Menu.NONE, Menu.NONE,
                 MenuHelper.POSITION_SLIDESHOW,
@@ -497,7 +503,7 @@ public class ViewImage extends NoSearchActivity implements View.OnClickListener 
         item.setAlphabeticShortcut('p');
         item.setIcon(android.R.drawable.ic_menu_preferences);
 
-        return true;
+        return false;
     }
 
     protected Runnable mDeletePhotoRunnable = new Runnable() {
@@ -535,7 +541,7 @@ public class ViewImage extends NoSearchActivity implements View.OnClickListener 
 
         MenuHelper.enableShowOnMapMenuItem(menu, MenuHelper.hasLatLngData(image));
 
-        return true;
+        return false;
     }
 
     @Override
@@ -545,13 +551,13 @@ public class ViewImage extends NoSearchActivity implements View.OnClickListener 
             mImageMenuRunnable.aboutToCall(item,
                     mAllImages.getImageAt(mCurrentPosition));
         }
-        return b;
+        return false;
     }
 
     void setImage(int pos, boolean showControls) {
         mCurrentPosition = pos;
 
-        Bitmap b = mCache.getBitmap(pos);
+        b = mCache.getBitmap(pos);
         if (b != null) {
             IImage image = mAllImages.getImageAt(pos);
             mImageView.setImageRotateBitmapResetBase(
@@ -617,6 +623,25 @@ public class ViewImage extends NoSearchActivity implements View.OnClickListener 
         updateActionIcons();
     }
 
+    public boolean onContextItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+        case 1:
+            MenuHelper.deletePhoto(this, mDeletePhotoRunnable);
+            break;
+        case 3:
+            Rotate();
+            break;
+        }
+        return false;
+    }
+
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo info) {
+        super.onCreateContextMenu(menu, v, info);
+        menu.setHeaderTitle(R.string.context_menu_header);
+        menu.add(0, 1, 0, R.string.multiselect_delete);
+        menu.add(0, 3, 0, R.string.rotate);
+    }
+
     @Override
     public void onCreate(Bundle instanceState) {
         super.onCreate(instanceState);
@@ -635,6 +660,104 @@ public class ViewImage extends NoSearchActivity implements View.OnClickListener 
 
         mImageView = (ImageViewTouch) findViewById(R.id.image);
         mImageView.setEnableTrackballScroll(true);
+
+        Bundle bundle = getIntent().getExtras();
+        if (bundle != null) {
+            String str = bundle.getString("open");
+            if (str != null && str.equals("open")) {
+                mImageView.setOnCreateContextMenuListener(this);
+            }
+        }
+
+        mImageView.setOnTouchListener(new View.OnTouchListener() {
+            public boolean onTouch(View v, MotionEvent event) {
+                switch (event.getAction() & 255) {
+                case MotionEvent.ACTION_DOWN:
+                    touchState = DRAG;
+                    centerX = event.getX(0);
+                    centerY = event.getY(0);
+                    Log.d("yyx", "centerX------->" + centerX);
+                    Log.d("yyx", "centerY------->" + centerY);
+                    saveMatrix.set(matrix);
+                    break;
+                case MotionEvent.ACTION_POINTER_1_DOWN:
+                    Log.d("onTouch", "ACTION_POINTER_DOWN");
+                    saveDistance = calcDistance(event);
+                    if (saveDistance > MIN_DIST) {
+                        saveMatrix.set(matrix);
+                        touchState = ZOOM;
+                    }
+                    break;
+                case MotionEvent.ACTION_MOVE:
+                    if (event.getPointerCount() != 2)
+                        break;
+                    if (touchState == DRAG) {
+                    } else if (touchState == ZOOM) {
+                        float distance = calcDistance(event);
+                        calcMidpoint(centerX, centerY, event);
+                        if (distance > MIN_DIST) {
+                            matrix.set(saveMatrix);
+                            float scale = (distance / saveDistance);
+                            Log.d("onTouch", "scale = " + scale);
+                            if (Math.abs(scale) > 1) {
+                                mImageView.zoomIn();
+                                mIsInZoomIn = true;
+                            } else if (scale < 1) {
+                                mImageView.zoomOut();
+                                mIsInZoomIn = true;
+                            }
+                        }
+                    }
+                    Log.d("onTouch", "ACTION_MOVE");
+                    break;
+                case MotionEvent.ACTION_UP:
+                case MotionEvent.ACTION_POINTER_1_UP:
+                    if (touchState == ZOOM) {
+                        float distance = calcDistance(event);
+                        calcMidpoint(centerX, centerY, event);
+                        if (distance > MIN_DIST) {
+                            matrix.set(saveMatrix);
+                            float scale = (distance / saveDistance);
+                            Log.d("onTouch", "scale = " + scale);
+                            if (Math.abs(scale) > 1) {
+                                mImageView.requestEpdMode(View.EPD_FULL);
+                                mImageView.zoomIn();
+                                mIsInZoomIn = true;
+                            } else if (scale < 1) {
+                                mImageView.requestEpdMode(View.EPD_FULL);
+                                mImageView.zoomOut();
+                                mIsInZoomIn = true;
+                            }
+                        }
+                    }
+                    touchState = NONE;
+                    break;
+                }
+
+                if (event.getAction() == MotionEvent.ACTION_UP) {
+                    if (mIsInA2Mode) {
+                        Log.d(TAG, "Touch UP, set in PART mode");
+                        if (mExitA2 == null) {
+                            mExitA2 = new ExitA2ModeAndInvalidate();
+                        }
+                        m_Handler.removeCallbacks(mExitA2);
+                        m_Handler.post(mExitA2);
+                        mImageView.requestEpdMode(View.EPD_FULL);
+                        mImageView.invalidate();
+                    }
+                    if (mImageView.getScale() == 1) {
+                        Log.d(TAG, "ACTION_UP, mIsInZoomIn mode is false");
+                        Log.d("yyx", " onCreateContextMenu--------------------->");
+                        mIsInZoomIn = false;
+                    }
+                }
+
+
+                mGestureDetector.onTouchEvent(event);
+                return false;
+            }
+        });
+
         mCache = new BitmapCache(3);
         mImageView.setRecycler(mCache);
 
@@ -682,17 +805,18 @@ public class ViewImage extends NoSearchActivity implements View.OnClickListener 
         // applications like MMS, we cannot pass the permission to other
         // activities due to the current framework design.
         if (!MenuHelper.isWhiteListUri(mSavedUri)) {
-            mShowActionIcons = false;
+            mShowActionIcons = true;
         }
 
+        System.out.println("  onCreate  mShowActionIcons==" + mShowActionIcons);
         if (mShowActionIcons) {
             int[] pickIds = {R.id.attach, R.id.cancel};
             int[] normalIds = {R.id.play, R.id.discard, R.id.back};
             int[] connectIds = isPickIntent() ? pickIds : normalIds;
             for (int id : connectIds) {
-                View view = mActionIconPanel.findViewById(id);
-                view.setVisibility(View.VISIBLE);
-                view.setOnClickListener(this);
+                viewback = mActionIconPanel.findViewById(id);
+                viewback.setVisibility(View.INVISIBLE);
+                viewback.setOnClickListener(this);
             }
         }
 
@@ -750,6 +874,8 @@ public class ViewImage extends NoSearchActivity implements View.OnClickListener 
             return defaultValue;
         }
     }
+
+    private boolean backstyle = false;
 
     void setMode(int mode) {
         if (mMode == mode) {
@@ -887,6 +1013,7 @@ public class ViewImage extends NoSearchActivity implements View.OnClickListener 
                         newView.setVisibility(View.VISIBLE);
                         newView.setImageRotateBitmapResetBase(bitmap, true);
                         newView.bringToFront();
+                        newView.requestEpdMode(View.EPD_FULL);
 
                         int animation = 0;
 
@@ -905,6 +1032,7 @@ public class ViewImage extends NoSearchActivity implements View.OnClickListener 
                         Animation aOut = mSlideShowOutAnimation[animation];
                         oldView.setVisibility(View.INVISIBLE);
                         oldView.startAnimation(aOut);
+                        oldView.requestEpdMode(View.EPD_FULL);
 
                         mCurrentPosition = requestedPos;
 
@@ -916,6 +1044,7 @@ public class ViewImage extends NoSearchActivity implements View.OnClickListener 
                                 }
                             } else {
                                 if (wl != null && wl.isHeld()) {
+                                    System.out.println("shy ViewImage start release ......");
                                     wl.release();
                                     wl = null;
                                 }
@@ -938,10 +1067,8 @@ public class ViewImage extends NoSearchActivity implements View.OnClickListener 
                 pos = mShuffleOrder[pos];
             }
             mGetter.setPosition(pos, cb, mAllImages, mHandler);
-            if (wl != null && wl.isHeld()) {
-                wl.release();
-                wl = null;
-            }
+            Log.d("yyx", "releaseWakeLock---------------->");
+            ImageGallery.releaseWakeLock();
         }
     }
 
@@ -1014,7 +1141,9 @@ public class ViewImage extends NoSearchActivity implements View.OnClickListener 
         if (mMode == MODE_SLIDESHOW) {
             PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
             wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "My_Tag");
+            System.out.println("shy ViewImage start acquire ......");
             wl.acquire();
+            Log.d("yyx", "acquireWakeLock------------yiyuxiang  ---->");
             loadNextImage(mCurrentPosition, 0, true);
         } else {  // MODE_NORMAL
             setImage(mCurrentPosition, mShowControls);
@@ -1071,6 +1200,27 @@ public class ViewImage extends NoSearchActivity implements View.OnClickListener 
         }
     }
 
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        System.out.println("shy 0115 onKeyDown keyCode-->" + keyCode);
+        if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
+            System.out.println("shy 0115 onKeyDown next-->");
+            mImageView.requestEpdMode(View.EPD_FULL);
+            moveNextOrPrevious(1);
+            return true;
+        }
+        if (keyCode == KeyEvent.KEYCODE_DPAD_UP) {
+            System.out.println("shy 0115 onKeyDown prev-->");
+            mImageView.requestEpdMode(View.EPD_FULL);
+            moveNextOrPrevious(-1);
+            return true;
+        }
+        if (keyCode == KeyEvent.KEYCODE_MENU) {
+            System.out.println("shy 0115 onKeyDown menu-->");
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
     private void startPlayVideoActivity() {
         IImage image = mAllImages.getImageAt(mCurrentPosition);
         Intent intent = new Intent(
@@ -1096,18 +1246,6 @@ public class ViewImage extends NoSearchActivity implements View.OnClickListener 
                     return;
                 }
                 startShareMediaActivity(image);
-                break;
-            }
-            case R.id.setas: {
-                IImage image = mAllImages.getImageAt(mCurrentPosition);
-                Intent intent = Util.createSetAsIntent(image);
-                try {
-                    startActivity(Intent.createChooser(
-                            intent, getText(R.string.setImage)));
-                } catch (android.content.ActivityNotFoundException ex) {
-                    Toast.makeText(this, R.string.no_way_to_share_video,
-                            Toast.LENGTH_SHORT).show();
-                }
                 break;
             }
             case R.id.back:
@@ -1156,6 +1294,56 @@ public class ViewImage extends NoSearchActivity implements View.OnClickListener 
                 break;
         }
     }
+
+    public void setRotate(int dir) {
+        IImage image = mAllImages.getImageAt(mCurrentPosition);
+        image.rotateImageBy(dir);
+        mCurrentPosition = mAllImages.getImageIndex(image);
+        setImage(mCurrentPosition, false);
+        new Thread(new Runnable() {
+            public void run() {
+                try {
+                    Thread.sleep(2000);
+                    mImageView.requestEpdMode(1);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+    }
+
+    private void Rotate() {
+        System.out.println("photo view Rotate !!!!!!!!!!!!!!");
+        new AlertDialog.Builder(this)
+            .setTitle(R.string.context_menu_header)
+            .setItems(new String[]{
+                getResources().getString(R.string.first),
+                getResources().getString(R.string.second),
+                getResources().getString(R.string.thrid)},
+                new OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        switch (which) {
+                        case 0: setRotate(90); break;
+                        case 1: setRotate(180); break;
+                        case 2: setRotate(270); break;
+                        }
+                    }
+                })
+            .setNegativeButton(R.string.multiselect_cancel, null)
+            .show()
+            .setOnDismissListener(new OnDismissListener() {
+                   public void onDismiss(DialogInterface dialog) {
+                        handlerDecoder.post(decoderThread);
+                   }
+                });
+    }
+
+    Handler handlerDecoder = new Handler();;
+    Runnable decoderThread = new Runnable() {
+        public void run() {
+            handlerDecoder.removeCallbacks(decoderThread);
+        }
+    };
 }
 
 class ImageViewTouch extends ImageViewTouchBase {
@@ -1233,16 +1421,6 @@ class ImageViewTouch extends ImageViewTouchBase {
                         panBy(-PAN_RATE, 0);
                         center(true, false);
                     }
-                    return true;
-                }
-                case KeyEvent.KEYCODE_DPAD_UP: {
-                    panBy(0, PAN_RATE);
-                    center(false, true);
-                    return true;
-                }
-                case KeyEvent.KEYCODE_DPAD_DOWN: {
-                    panBy(0, -PAN_RATE);
-                    center(false, true);
                     return true;
                 }
                 case KeyEvent.KEYCODE_MENU: {

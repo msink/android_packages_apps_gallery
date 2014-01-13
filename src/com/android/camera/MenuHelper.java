@@ -388,6 +388,9 @@ public class MenuHelper {
                         : Formatter.formatFileSize(activity, length);
                 ((TextView) d
                     .findViewById(R.id.details_file_size_value))
+                    .setVisibility(View.VISIBLE);
+                ((TextView) d
+                    .findViewById(R.id.details_file_size_value))
                     .setText(lengthString);
 
                 d.findViewById(R.id.details_frame_rate_row)
@@ -395,7 +398,16 @@ public class MenuHelper {
                 d.findViewById(R.id.details_bit_rate_row)
                             .setVisibility(View.GONE);
                 d.findViewById(R.id.details_format_row)
-                            .setVisibility(View.GONE);
+                            .setVisibility(View.VISIBLE);
+
+                ((TextView) d
+                    .findViewById(R.id.details_format_value))
+                    .setVisibility(View.VISIBLE);
+                ((TextView) d
+                    .findViewById(R.id.details_format_value))
+                    .setText(image.getDataPath().substring(
+                             image.getDataPath().lastIndexOf(".") + 1));
+
                 d.findViewById(R.id.details_codec_row)
                             .setVisibility(View.GONE);
 

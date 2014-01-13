@@ -72,13 +72,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
         <com.android.camera.ActionMenuButton
-                android:id="@+id/setas"
-                android:visibility="gone"
-                android:drawableTop="@drawable/ic_menu_set_as"
-                android:text="@string/camera_set"
-                style="@style/OnscreenActionIcon"
-        />
-        <com.android.camera.ActionMenuButton
                 android:id="@+id/play"
                 android:visibility="gone"
                 android:drawableTop="@drawable/ic_menu_camera_play"
@@ -97,6 +90,7 @@
                 android:visibility="gone"
                 android:drawableTop="@drawable/ic_menu_delete"
                 android:text="@string/camera_toss"
+                android:textColor="#000"
                 style="@style/OnscreenActionIcon"
         />
         <com.android.camera.ActionMenuButton
@@ -118,6 +112,7 @@
                 android:visibility="gone"
                 android:drawableTop="@drawable/ic_menu_cancel"
                 android:text="@string/camera_back"
+                android:textColor="#000"
                 style="@style/OnscreenActionIcon"
         />
     </com.android.camera.EvenlySpacedLayout>

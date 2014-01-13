@@ -48,6 +48,7 @@ import android.provider.MediaStore;
 import android.provider.MediaStore.Images;
 import android.util.Log;
 import android.view.ContextMenu;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -120,6 +121,16 @@ public class GalleryPicker extends NoSearchActivity {
         };
 
         ImageManager.ensureOSXCompatibleFolder();
+    }
+
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        System.out.println("0115 keycode -->" + keyCode);
+        if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
+            return true;
+        } else if (keyCode == KeyEvent.KEYCODE_DPAD_UP) {
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
     }
 
     Dialog mMediaScanningDialog;
