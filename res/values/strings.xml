@@ -212,7 +212,7 @@
         <item>ascending</item>
     </string-array>
     <!-- Default option value in dialog that appears after selecting Picture sort setting option -->
-    <string name="default_value_pref_gallery_sort" translatable="false">descending</string>
+    <string name="default_value_pref_gallery_sort" translatable="false">ascending</string>
     <!-- Settings screen, setting option name -->
     <string name="pref_gallery_slideshow_interval_title">Slideshow interval</string>
     <!-- Settings screen, setting summary text -->
